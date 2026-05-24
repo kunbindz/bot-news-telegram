@@ -1,0 +1,118 @@
+# =========================================
+# AI Deal Bot - Configuration
+# =========================================
+
+schedule:
+  reddit_interval_minutes: 15
+  feeds_interval_minutes: 20
+  twitter_interval_minutes: 30
+  batch_send_delay_seconds: 2  # delay giữa các message Telegram để tránh rate limit
+  max_send_per_cycle: 5        # tối đa N tin mỗi cycle, tránh spam
+  quiet_hours_start: 23        # không gửi từ 23h...
+  quiet_hours_end: 7           # ...đến 7h sáng (trừ tin score >= quiet_min_score)
+  quiet_min_score: 9           # tin cực hot vẫn gửi dù đang quiet hours
+
+ai_filter:
+  enabled: true
+  base_url: "https://token-plan-sgp.xiaomimimo.com/v1"
+  model: "mimo-v2.5"
+  min_score_to_notify: 6  # chỉ gửi item có score >= 6
+  timeout_seconds: 30
+
+reddit:
+  # Lượng post lấy mỗi lần poll mỗi sub
+  posts_per_sub: 15
+  # Chỉ lấy post mới trong vòng N giờ
+  max_age_hours: 6
+  # Delay giữa các sub để tránh 429 (tăng lên 2-3 nếu bị rate limit)
+  request_delay_seconds: 1.5
+  subreddits:
+    - ChatGPT
+    - LocalLLaMA
+    - MachineLearning
+    - singularity
+    - ClaudeAI
+    - OpenAI
+    - artificial
+
+twitter:
+  enabled: false  # Cloudflare chặn IP VN, bật lại khi dùng VPN/proxy
+  tweets_per_account: 10
+  max_age_hours: 6
+  accounts:
+    - AnthropicAI
+    - OpenAI
+    - GoogleDeepMind
+    - GoogleAI
+    - rowancheung
+    - minchoi
+    - emollick
+    - sama
+    - AndrewYNg
+
+feeds:
+  max_age_hours: 12
+  request_delay_seconds: 1.0
+  sources:
+    - name: hackernews
+      url: "https://hnrss.org/newest?points=100"
+      label: "hn"
+    - name: devto-ai
+      url: "https://dev.to/feed/tag/ai"
+      label: "devto"
+    - name: devto-llm
+      url: "https://dev.to/feed/tag/llm"
+      label: "devto"
+    - name: producthunt
+      url: "https://www.producthunt.com/feed"
+      label: "ph"
+    - name: github-trending
+      url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml"
+      label: "github"
+    - name: huggingface
+      url: "https://huggingface.co/blog/feed.xml"
+      label: "hf"
+    - name: lobsters
+      url: "https://lobste.rs/rss"
+      label: "lobsters"
+    - name: simonwillison
+      url: "https://simonwillison.net/atom/everything/"
+      label: "simon"
+
+# Keyword filter trước khi gọi AI (tiết kiệm credit)
+keywords:
+  whitelist:
+    - free
+    - trial
+    - miễn phí
+    - launch
+    - release
+    - release
+    - announce
+    - introducing
+    - GPT
+    - Claude
+    - Gemini
+    - Llama
+    - Mistral
+    - DeepSeek
+    - MiMo
+    - Qwen
+    - coupon
+    - discount
+    - limit
+    - quota
+    - increase
+    - udemy
+    - course
+    - opensource
+    - open-source
+    - beta
+    - access
+  blacklist:
+    - NSFW
+    - onlyfans
+    - giveaway scam
+    - airdrop
+    - shitcoin
+    - rug pull
