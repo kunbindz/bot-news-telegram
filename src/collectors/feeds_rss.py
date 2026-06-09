@@ -5,7 +5,7 @@ import re
 from calendar import timegm
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
-from typing import List
+from typing import List, Optional
 
 import aiohttp
 import feedparser
@@ -22,6 +22,7 @@ class FeedSource:
     name: str
     url: str
     label: str
+    max_items: Optional[int] = None
 
 
 def _strip_html(text: str) -> str:
@@ -69,9 +70,11 @@ class FeedsRSSCollector:
             author = getattr(entry, "author", "") or "unknown"
 
             raw = getattr(entry, "summary", "") or ""
+            if not raw and getattr(entry, "content", None):
+                raw = entry.content[0].get("value", "")
             content = _strip_html(raw)
-            if len(content) > 1500:
-                content = content[:1500] + "..."
+            if len(content) > 4000:
+                content = content[:4000] + "..."
 
             items.append(Item(
                 source=f"{source.label}:{source.name}",
@@ -80,6 +83,8 @@ class FeedsRSSCollector:
                 url=url,
                 author=author,
             ))
+            if source.max_items and len(items) >= source.max_items:
+                break
 
         logger.info(f"Feed {source.name}: collected {len(items)} candidates")
         return items

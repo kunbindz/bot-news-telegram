@@ -1,5 +1,6 @@
 """Main pipeline: collect → keyword filter → dedupe → AI filter → send."""
 import logging
+from collections import Counter
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
@@ -39,6 +40,73 @@ class Pipeline:
         self.sender = TelegramSender(
             batch_delay=config["schedule"]["batch_send_delay_seconds"]
         )
+        self.max_per_source = sched.get("max_per_source_per_cycle", 2)
+        self.max_per_topic = sched.get("max_per_topic_per_cycle", 1)
+
+    def _primary_topic(self, item: Item) -> str:
+        tags = [t.strip().lower() for t in (item.summary_tags or []) if t and t.strip()]
+        if tags:
+            return tags[0]
+        source_hint = item.short_source.lower()
+        title_hint = f"{item.title} {item.content}".lower()
+        for keyword in (
+            "claude", "anthropic", "openai", "gpt", "gemini", "llama",
+            "mistral", "deepseek", "qwen", "mcp", "agent", "cursor",
+        ):
+            if keyword in source_hint or keyword in title_hint:
+                return keyword
+        return (item.category or "other").lower()
+
+    def _select_diverse_items(self, items: List[Item]) -> List[Item]:
+        if len(items) <= self.max_send_per_cycle:
+            return sorted(items, key=lambda x: x.score or 0, reverse=True)
+
+        source_counts = Counter(it.source for it in items)
+        topic_counts = Counter(self._primary_topic(it) for it in items)
+        ranked = sorted(
+            items,
+            key=lambda it: (
+                (it.score or 0)
+                + min(0.6, 0.15 * max(0, 4 - source_counts[it.source]))
+                + min(0.6, 0.2 * max(0, 3 - topic_counts[self._primary_topic(it)]))
+            ),
+            reverse=True,
+        )
+
+        selected: List[Item] = []
+        selected_sources = Counter()
+        selected_topics = Counter()
+
+        for item in ranked:
+            topic = self._primary_topic(item)
+            if selected_sources[item.source] >= self.max_per_source:
+                continue
+            if selected_topics[topic] >= self.max_per_topic:
+                continue
+            selected.append(item)
+            selected_sources[item.source] += 1
+            selected_topics[topic] += 1
+            if len(selected) >= self.max_send_per_cycle:
+                return selected
+
+        for item in ranked:
+            if item in selected:
+                continue
+            if selected_sources[item.source] >= self.max_per_source:
+                continue
+            selected.append(item)
+            selected_sources[item.source] += 1
+            if len(selected) >= self.max_send_per_cycle:
+                return selected
+
+        for item in ranked:
+            if item in selected:
+                continue
+            selected.append(item)
+            if len(selected) >= self.max_send_per_cycle:
+                return selected
+
+        return selected
 
     async def process(self, items: List[Item], source_name: str) -> dict:
         """Run full pipeline on a batch. Returns stats dict."""
@@ -82,10 +150,15 @@ class Pipeline:
             if to_send:
                 logger.info(f"Quiet hours ({hour}h): only sending {len(to_send)} urgent items (score>={self.quiet_min_score})")
 
-        # Step 5: cap per cycle — keep top N by score
+        # Step 5: cap per cycle with source/topic diversity
         if len(to_send) > self.max_send_per_cycle:
-            to_send = sorted(to_send, key=lambda x: x.score or 0, reverse=True)[:self.max_send_per_cycle]
-            logger.info(f"Capped to top {self.max_send_per_cycle} items this cycle")
+            before = len(to_send)
+            to_send = self._select_diverse_items(to_send)
+            logger.info(
+                f"Diversity cap: selected {len(to_send)}/{before} "
+                f"items (max={self.max_send_per_cycle}, "
+                f"per_source={self.max_per_source}, per_topic={self.max_per_topic})"
+            )
 
         # Step 6: record all (so we don't re-process), then send filtered
         await dedupe.record_items(items, sent=False)

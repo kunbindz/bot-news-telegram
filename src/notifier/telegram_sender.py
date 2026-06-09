@@ -34,12 +34,17 @@ SOURCE_EMOJI = {
     "hf": "🤗",
     "lobsters": "🦞",
     "simon": "✍️",
+    "anthropic": "🟣",
 }
 
 
 def _source_emoji(source: str) -> str:
     prefix = source.split(":")[0] if ":" in source else source
     return SOURCE_EMOJI.get(prefix, "📌")
+
+
+def _clean_line(text: str) -> str:
+    return " ".join((text or "").split())
 
 
 def format_message(item: Item) -> str:
@@ -49,15 +54,32 @@ def format_message(item: Item) -> str:
     category_label = (item.category or "other").replace("_", " ").title()
 
     title = html.escape(item.title or "")
-    summary = html.escape(item.vn_summary or "")
     source = html.escape(item.short_source)
     url = item.url or ""
+    what = _clean_line(item.summary_what or "")
+    why = _clean_line(item.summary_why or "")
+    action = _clean_line(item.summary_action or "")
+    fallback_summary = _clean_line(item.vn_summary or "")
+    tags = [html.escape(tag) for tag in (item.summary_tags or [])[:4]]
+
+    summary_lines = []
+    if what:
+        summary_lines.append(f"<b>What:</b> {html.escape(what)}")
+    if why:
+        summary_lines.append(f"<b>Why:</b> {html.escape(why)}")
+    if action:
+        summary_lines.append(f"<b>Action:</b> {html.escape(action)}")
+    if not summary_lines and fallback_summary:
+        summary_lines.append(html.escape(fallback_summary))
+    if tags:
+        summary_lines.append("")
+        summary_lines.append(f"<b>Tags:</b> {' • '.join(tags)}")
 
     parts = [
         f"{cat_emoji} <b>[{category_label}]</b>  {src_emoji} <i>{source}</i>",
         f"<b>{title}</b>",
         "",
-        summary,
+        "\n".join(summary_lines),
         "",
         f"📊 Score: <b>{item.score}/10</b>",
         f'🔗 <a href="{url}">Xem chi tiết</a>',

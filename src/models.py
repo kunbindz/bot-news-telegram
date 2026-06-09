@@ -1,6 +1,6 @@
 """Shared data structures."""
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
+from typing import List, Optional
 
 
 @dataclass
@@ -15,6 +15,10 @@ class Item:
     category: Optional[str] = None
     score: Optional[int] = None
     vn_summary: Optional[str] = None
+    summary_what: Optional[str] = None
+    summary_why: Optional[str] = None
+    summary_action: Optional[str] = None
+    summary_tags: Optional[List[str]] = None
     should_notify: bool = True
 
     @property

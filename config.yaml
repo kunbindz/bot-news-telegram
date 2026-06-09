@@ -8,6 +8,8 @@ schedule:
   twitter_interval_minutes: 30
   batch_send_delay_seconds: 2  # delay giữa các message Telegram để tránh rate limit
   max_send_per_cycle: 5        # tối đa N tin mỗi cycle, tránh spam
+  max_per_source_per_cycle: 2  # tránh 1 nguồn chiếm hết batch
+  max_per_topic_per_cycle: 1   # tránh nhiều tin cùng một chủ đề/model
   quiet_hours_start: 23        # không gửi từ 23h...
   quiet_hours_end: 7           # ...đến 7h sáng (trừ tin score >= quiet_min_score)
   quiet_min_score: 9           # tin cực hot vẫn gửi dù đang quiet hours
@@ -57,27 +59,63 @@ feeds:
     - name: hackernews
       url: "https://hnrss.org/newest?points=100"
       label: "hn"
+      max_items: 15
+    - name: hn-claude
+      url: "https://hnrss.org/newest?q=Claude"
+      label: "hn"
+      max_items: 10
+    - name: hn-anthropic
+      url: "https://hnrss.org/newest?q=Anthropic"
+      label: "hn"
+      max_items: 10
     - name: devto-ai
       url: "https://dev.to/feed/tag/ai"
       label: "devto"
+      max_items: 6
     - name: devto-llm
       url: "https://dev.to/feed/tag/llm"
       label: "devto"
+      max_items: 6
+    - name: devto-claude
+      url: "https://dev.to/feed/tag/claude"
+      label: "devto"
+      max_items: 8
+    - name: devto-anthropic
+      url: "https://dev.to/feed/tag/anthropic"
+      label: "devto"
+      max_items: 8
+    - name: anthropic-news
+      url: "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml"
+      label: "anthropic"
+      max_items: 10
+    - name: claude-code-releases
+      url: "https://github.com/anthropics/claude-code/releases.atom"
+      label: "github"
+      max_items: 10
+    - name: claude-code-commits
+      url: "https://github.com/anthropics/claude-code/commits/main.atom"
+      label: "github"
+      max_items: 6
     - name: producthunt
       url: "https://www.producthunt.com/feed"
       label: "ph"
+      max_items: 10
     - name: github-trending
       url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml"
       label: "github"
+      max_items: 12
     - name: huggingface
       url: "https://huggingface.co/blog/feed.xml"
       label: "hf"
+      max_items: 10
     - name: lobsters
       url: "https://lobste.rs/rss"
       label: "lobsters"
+      max_items: 10
     - name: simonwillison
       url: "https://simonwillison.net/atom/everything/"
       label: "simon"
+      max_items: 10
 
 # Keyword filter trước khi gọi AI (tiết kiệm credit)
 keywords:
@@ -92,6 +130,13 @@ keywords:
     - introducing
     - GPT
     - Claude
+    - Anthropic
+    - Claude Code
+    - MCP
+    - Model Context Protocol
+    - computer use
+    - Artifacts
+    - Projects
     - Gemini
     - Llama
     - Mistral

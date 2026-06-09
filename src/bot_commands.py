@@ -39,6 +39,7 @@ class BotState:
 SOURCE_EMOJI = {
     "reddit": "🔴", "hn": "🟠", "devto": "💜",
     "ph": "🟡", "github": "⚫", "twitter": "🐦",
+    "anthropic": "🟣",
 }
 
 

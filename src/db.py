@@ -74,9 +74,13 @@ async def mark_seen(item_hash: str, source: str, title: str, url: str,
     """Record an item as seen."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            """INSERT OR IGNORE INTO seen_items
+            """INSERT INTO seen_items
                (hash, source, title, url, sent, score, category)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(hash) DO UPDATE SET
+                   sent = CASE WHEN excluded.sent = 1 THEN 1 ELSE seen_items.sent END,
+                   score = COALESCE(excluded.score, seen_items.score),
+                   category = COALESCE(excluded.category, seen_items.category)""",
             (item_hash, source, title, url, sent, score, category)
         )
         await db.commit()
