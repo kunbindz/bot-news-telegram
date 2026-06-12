@@ -9,6 +9,8 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src import db
+from src.posting.blog_writer import write_draft
+from src.posting.draft_generator import BlogDraftGenerator, DraftGenerationError
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ class BotState:
         state = cls()
         if "paused" in data:
             state.paused = data["paused"] == "1"
-        if "score_override" in data:
+        if data.get("score_override"):
             state.score_override = int(data["score_override"])
         return state
 
@@ -166,3 +168,72 @@ class BotCommandHandlers:
             lines.append(f"{e} {src_label}: <b>{sent}</b> gửi / {total} xử lý")
         lines.append(f"\n✅ Tổng: <b>{total_sent}</b> gửi / {total_seen} xử lý")
         await update.message.reply_html("\n".join(lines))
+
+    async def cmd_draft_top(self, update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+        if not self._is_allowed(update):
+            return
+
+        posting = self.config.get("posting", {})
+        if not posting.get("enabled", True):
+            await update.message.reply_text("Posting dang tat trong config.yaml.")
+            return
+
+        try:
+            hours = int(ctx.args[0]) if len(ctx.args) >= 1 else int(posting.get("default_hours", 24))
+            min_score = int(ctx.args[1]) if len(ctx.args) >= 2 else int(posting.get("min_score", 8))
+            limit = int(ctx.args[2]) if len(ctx.args) >= 3 else int(posting.get("default_limit", 5))
+        except ValueError:
+            await update.message.reply_text("Dung: /draft_top [hours] [min_score] [limit]. Vi du: /draft_top 24 8 5")
+            return
+
+        min_items = int(posting.get("min_items", 2))
+        candidates = await db.get_top_candidates(
+            hours=hours,
+            limit=limit,
+            min_score=min_score,
+            include_drafted=bool(posting.get("include_drafted", False)),
+        )
+        if len(candidates) < min_items:
+            await update.message.reply_text(
+                f"Chua du candidate de tao bai: {len(candidates)}/{min_items} "
+                f"(hours={hours}, min_score={min_score})."
+            )
+            return
+
+        await update.message.reply_text(
+            f"Dang tao draft tu {len(candidates)} tin top trong {hours}h, score >= {min_score}..."
+        )
+
+        try:
+            generator = BlogDraftGenerator(
+                base_url=self.config["ai_filter"]["base_url"],
+                model=posting.get("model") or self.config["ai_filter"]["model"],
+                timeout=int(posting.get("timeout_seconds", 60)),
+            )
+            draft = await generator.generate(candidates)
+            path = write_draft(posting["blog_dir"], draft)
+            if posting.get("mark_drafted_on_create", True):
+                await db.mark_drafted([row["hash"] for row in candidates])
+        except (DraftGenerationError, KeyError, RuntimeError) as e:
+            await update.message.reply_text(f"Tao draft that bai: {e}")
+            return
+        except Exception as e:
+            logger.exception("Unexpected draft generation error")
+            await update.message.reply_text(f"Tao draft loi bat ngo: {e}")
+            return
+
+        source_lines = []
+        for row in candidates:
+            title = html.escape((row.get("title") or "")[:80])
+            url = row.get("url") or ""
+            score = row.get("score") or "?"
+            source_lines.append(f'- <a href="{url}">{title}</a> (score {score})')
+
+        text = (
+            "<b>Da tao draft blog</b>\n\n"
+            f"Title: <b>{html.escape(draft.title)}</b>\n"
+            f"File: <code>{html.escape(str(path))}</code>\n\n"
+            "<b>Nguon da dung:</b>\n"
+            + "\n".join(source_lines)
+        )
+        await update.message.reply_html(text, disable_web_page_preview=True)

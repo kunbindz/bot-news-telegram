@@ -168,6 +168,7 @@ async def run_scheduler(config: dict):
     app.add_handler(CommandHandler("resume", handlers.cmd_resume))
     app.add_handler(CommandHandler("score",  handlers.cmd_score))
     app.add_handler(CommandHandler("top",    handlers.cmd_top))
+    app.add_handler(CommandHandler("draft_top", handlers.cmd_draft_top))
     app.add_handler(CommandHandler("stats",  handlers.cmd_stats))
 
     logger.info("Bot started. Press Ctrl+C to stop.")

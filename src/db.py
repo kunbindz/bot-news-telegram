@@ -2,6 +2,7 @@
 import aiosqlite
 import hashlib
 import os
+import json
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -24,6 +25,7 @@ async def init_db():
                 category TEXT
             )
         """)
+        await _ensure_seen_items_columns(db)
         await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_seen_at ON seen_items(seen_at)
         """)
@@ -34,6 +36,27 @@ async def init_db():
             )
         """)
         await db.commit()
+
+
+async def _ensure_seen_items_columns(db):
+    """Add newer columns without requiring a destructive migration."""
+    cursor = await db.execute("PRAGMA table_info(seen_items)")
+    existing = {row[1] for row in await cursor.fetchall()}
+    columns = {
+        "content": "TEXT",
+        "author": "TEXT",
+        "vn_summary": "TEXT",
+        "summary_what": "TEXT",
+        "summary_why": "TEXT",
+        "summary_action": "TEXT",
+        "summary_tags": "TEXT",
+        "should_notify": "BOOLEAN",
+        "drafted": "BOOLEAN DEFAULT 0",
+        "drafted_at": "TIMESTAMP",
+    }
+    for name, definition in columns.items():
+        if name not in existing:
+            await db.execute(f"ALTER TABLE seen_items ADD COLUMN {name} {definition}")
 
 
 async def load_bot_state() -> dict:
@@ -70,18 +93,37 @@ async def is_seen(item_hash: str) -> bool:
 
 
 async def mark_seen(item_hash: str, source: str, title: str, url: str,
-                    sent: bool = False, score: int = None, category: str = None):
+                    sent: bool = False, score: int = None, category: str = None,
+                    content: str = None, author: str = None,
+                    vn_summary: str = None, summary_what: str = None,
+                    summary_why: str = None, summary_action: str = None,
+                    summary_tags=None, should_notify: bool = None):
     """Record an item as seen."""
+    tags_json = json.dumps(summary_tags or [], ensure_ascii=False)
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             """INSERT INTO seen_items
-               (hash, source, title, url, sent, score, category)
-               VALUES (?, ?, ?, ?, ?, ?, ?)
+               (hash, source, title, url, sent, score, category, content, author,
+                vn_summary, summary_what, summary_why, summary_action,
+                summary_tags, should_notify)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT(hash) DO UPDATE SET
                    sent = CASE WHEN excluded.sent = 1 THEN 1 ELSE seen_items.sent END,
                    score = COALESCE(excluded.score, seen_items.score),
-                   category = COALESCE(excluded.category, seen_items.category)""",
-            (item_hash, source, title, url, sent, score, category)
+                   category = COALESCE(excluded.category, seen_items.category),
+                   content = COALESCE(excluded.content, seen_items.content),
+                   author = COALESCE(excluded.author, seen_items.author),
+                   vn_summary = COALESCE(excluded.vn_summary, seen_items.vn_summary),
+                   summary_what = COALESCE(excluded.summary_what, seen_items.summary_what),
+                   summary_why = COALESCE(excluded.summary_why, seen_items.summary_why),
+                   summary_action = COALESCE(excluded.summary_action, seen_items.summary_action),
+                   summary_tags = COALESCE(excluded.summary_tags, seen_items.summary_tags),
+                   should_notify = COALESCE(excluded.should_notify, seen_items.should_notify)""",
+            (
+                item_hash, source, title, url, sent, score, category, content, author,
+                vn_summary, summary_what, summary_why, summary_action,
+                tags_json, should_notify,
+            )
         )
         await db.commit()
 
@@ -108,6 +150,42 @@ async def get_top_unsent(hours: int = 24, limit: int = 5):
             (cutoff, limit)
         )
         return await cursor.fetchall()
+
+
+async def get_top_candidates(hours: int = 24, limit: int = 5,
+                             min_score: int = 8, include_drafted: bool = False):
+    """Get full scored candidates for draft generation."""
+    cutoff = datetime.now() - timedelta(hours=hours)
+    drafted_filter = "" if include_drafted else "AND COALESCE(drafted, 0) = 0"
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            f"""SELECT hash, source, title, url, seen_at, sent, score, category,
+                      content, author, vn_summary, summary_what, summary_why,
+                      summary_action, summary_tags, should_notify
+               FROM seen_items
+               WHERE score IS NOT NULL
+                 AND score >= ?
+                 AND seen_at >= ?
+                 {drafted_filter}
+               ORDER BY score DESC, seen_at DESC
+               LIMIT ?""",
+            (min_score, cutoff, limit)
+        )
+        rows = await cursor.fetchall()
+        return [dict(row) for row in rows]
+
+
+async def mark_drafted(hashes):
+    """Mark candidates as used in a generated draft."""
+    if not hashes:
+        return
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.executemany(
+            "UPDATE seen_items SET drafted = 1, drafted_at = CURRENT_TIMESTAMP WHERE hash = ?",
+            [(h,) for h in hashes],
+        )
+        await db.commit()
 
 
 async def get_stats(hours: int = 24):

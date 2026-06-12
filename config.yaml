@@ -21,6 +21,17 @@ ai_filter:
   min_score_to_notify: 6  # chỉ gửi item có score >= 6
   timeout_seconds: 30
 
+posting:
+  enabled: true
+  blog_dir: "E:/blog/frontend/content/blog"
+  default_hours: 24
+  default_limit: 5
+  min_score: 8
+  min_items: 2
+  timeout_seconds: 60
+  include_drafted: false
+  mark_drafted_on_create: true
+
 reddit:
   # Lượng post lấy mỗi lần poll mỗi sub
   posts_per_sub: 15

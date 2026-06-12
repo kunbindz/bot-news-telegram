@@ -23,4 +23,7 @@ async def record_items(items: List[Item], sent: bool = False):
     for it in items:
         h = db.make_hash(it.url, it.title)
         await db.mark_seen(h, it.source, it.title, it.url, sent,
-                          it.score, it.category)
+                           it.score, it.category, it.content, it.author,
+                           it.vn_summary, it.summary_what, it.summary_why,
+                           it.summary_action, it.summary_tags,
+                           it.should_notify)
