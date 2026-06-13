@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 
 _default = Path(__file__).parent.parent / "db.sqlite"
 DB_PATH = Path(os.getenv("DB_PATH", str(_default)))
+# Đảm bảo thư mục chứa DB tồn tại (Railway volume mount /app/data chưa có sẵn)
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
 async def init_db():
