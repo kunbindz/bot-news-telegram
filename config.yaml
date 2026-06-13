@@ -3,8 +3,8 @@
 # =========================================
 
 schedule:
-  reddit_interval_minutes: 15
-  feeds_interval_minutes: 20
+  reddit_interval_minutes: 30
+  feeds_interval_minutes: 30
   twitter_interval_minutes: 30
   batch_send_delay_seconds: 2  # delay giữa các message Telegram để tránh rate limit
   max_send_per_cycle: 5        # tối đa N tin mỗi cycle, tránh spam
