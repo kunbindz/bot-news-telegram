@@ -22,7 +22,7 @@ ai_filter:
   timeout_seconds: 30
 
 posting:
-  enabled: true
+  enabled: false  # tester branch: chỉ bắn tin Telegram, KHÔNG tạo bài blog
   blog_dir: "E:/blog/frontend/content/blog"
   default_hours: 24
   default_limit: 5
