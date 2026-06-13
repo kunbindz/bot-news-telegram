@@ -122,9 +122,9 @@ feeds:
       url: "https://blog.postman.com/feed/"
       label: "postman"
       max_items: 8
-    - name: ministry-of-testing
-      url: "https://www.ministryoftesting.com/feed.rss"
-      label: "moT"
+    - name: testguild
+      url: "https://testguild.com/feed/"
+      label: "testguild"
       max_items: 8
     - name: software-testing-mag
       url: "https://www.softwaretestingmagazine.com/feed/"
