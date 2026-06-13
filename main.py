@@ -186,7 +186,7 @@ async def run_scheduler(config: dict):
         try:
             sender = TelegramSender()
             await sender.send_text(
-                "🤖 <b>AI Deal Bot online</b>\nĐang theo dõi Reddit + HN + Dev.to + ProductHunt + GitHub.\n"
+                "🧪 <b>Tester News Bot online</b>\nĐang theo dõi tin Testing/QA + SQL + Postman từ Reddit + HN + Dev.to + blog QA + GitHub releases.\n"
                 "Gõ /start để xem danh sách lệnh."
             )
         except Exception as e:

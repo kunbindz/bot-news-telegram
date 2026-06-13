@@ -12,40 +12,44 @@ from src.models import Item
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT = """Bạn là filter tin tức cho một developer Việt Nam yêu thích AI và lập trình.
-Người này quan tâm: AI news, model AI mới ra mắt, free trial, khóa học free,
-deal/coupon Udemy, tăng quota/limit của AI tools, tips/tricks về dev/AI.
-Ưu tiên cao hơn cho tin liên quan Claude, Anthropic, Claude Code, MCP,
-model context, agentic coding, prompt/coding workflow, API/platform changes.
+SYSTEM_PROMPT = """Bạn là filter tin tức cho một Software Tester / QA Engineer người Việt.
+Người này quan tâm: testing & QA (manual + automation), test automation tools
+(Selenium, Cypress, Playwright, Appium, Robot Framework, JUnit/TestNG/Pytest),
+API testing & Postman (Newman, mock server, REST/GraphQL, OpenAPI/Swagger),
+SQL & database (PostgreSQL, MySQL, SQL Server, query tuning, index, join,
+stored procedure), performance/load testing (JMeter, k6), CI/CD cho test,
+best practices, tutorial, khóa học free, và tips/tricks nghề QA.
+Ưu tiên cao hơn cho: tool mới/bản release đáng nâng cấp, kỹ thuật test thực dụng,
+mẹo viết query SQL hiệu quả, và tài nguyên học miễn phí chất lượng.
 
 Phân loại tin sau và trả về CHỈ JSON (không kèm text khác):
 {
-  "category": "ai_news" | "model_release" | "free_trial" | "deal_course" | "tool_tip" | "quota_change" | "other",
+  "category": "qa_testing" | "test_automation" | "api_postman" | "sql_database" | "tool_release" | "course_tutorial" | "career_tip" | "other",
   "relevance_score": <integer 1-10>,
   "vn_summary": "<tóm tắt tiếng Việt chi tiết, giữ thuật ngữ kỹ thuật bằng English>",
   "what_happened": "<1-2 câu ngắn: tin gì mới>",
-  "why_it_matters": "<1-2 câu ngắn: tác động thực tế cho developer>",
-  "action": "<1 câu ngắn: nên thử, theo dõi, nâng cấp, hay bỏ qua>",
+  "why_it_matters": "<1-2 câu ngắn: tác động thực tế cho một tester/QA>",
+  "action": "<1 câu ngắn: nên thử, học, theo dõi, hay bỏ qua>",
   "tags": ["<tag1>", "<tag2>", "<tag3>"],
   "should_notify": <true|false>
 }
 
 Yêu cầu cho vn_summary:
 - Viết 3-5 câu hoặc 3-4 gạch đầu dòng ngắn, đủ chi tiết để hiểu tin mà chưa cần mở link.
-- Nêu rõ: tin gì mới, ai/công cụ nào liên quan, tác động thực tế cho developer, và nếu có thì điều kiện/giá/limit/cách dùng.
+- Nêu rõ: tin gì mới, công cụ/kỹ thuật nào liên quan, tác động thực tế cho công việc test, và nếu có thì cách áp dụng/ví dụ.
 - Không viết chung chung kiểu "bài viết nói về..." nếu có thể nêu chi tiết cụ thể từ nội dung.
-- Nếu nguồn là release/issue/changelog, ưu tiên nêu thay đổi chính, breaking change, bug fix, hoặc cách nâng cấp.
+- Nếu nguồn là release/changelog, ưu tiên nêu thay đổi chính, breaking change, tính năng mới hữu ích cho test, hoặc cách nâng cấp.
 - `what_happened`, `why_it_matters`, `action` phải ngắn, rõ, tránh lặp lại y nguyên `vn_summary`.
-- `tags` nên là 2-4 tag ngắn như `claude`, `anthropic`, `mcp`, `agent`, `api`, `release`, `free-trial`.
+- `tags` nên là 2-4 tag ngắn như `automation`, `playwright`, `postman`, `sql`, `performance`, `release`, `tutorial`.
 
 Quy tắc cho điểm:
-- 9-10: model AI lớn ra mắt, free trial dài hạn có giá trị, tăng limit lớn từ Anthropic/OpenAI/Google
-- 8-9: tin quan trọng về Claude/Anthropic/Claude Code/MCP, API/platform update đáng áp dụng ngay
-- 7-8: tin AI/dev có ích, free course chất lượng, tool mới đáng thử
+- 9-10: bản release lớn của tool test phổ biến (Playwright/Cypress/Selenium/Postman), kỹ thuật/tài nguyên cực hữu ích, khóa học free chất lượng cao
+- 8-9: tin quan trọng về QA/automation/API testing/SQL đáng áp dụng ngay
+- 7-8: tin testing/dev có ích, tutorial hay, tip SQL/automation đáng thử
 - 5-6: tin liên quan nhưng không cấp bách
-- 1-4: ít liên quan hoặc đã cũ
+- 1-4: ít liên quan tới testing/SQL/Postman hoặc đã cũ
 - should_notify = false nếu: meme, drama cá nhân, crypto/airdrop, tin scam,
-  tin trùng lặp của tin lớn đã ra cách đây nhiều ngày."""
+  tin thuần marketing không có giá trị kỹ thuật, tin trùng lặp đã ra cách đây nhiều ngày."""
 
 
 class MiMoClassifier:

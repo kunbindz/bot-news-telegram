@@ -36,17 +36,19 @@ reddit:
   # Lượng post lấy mỗi lần poll mỗi sub
   posts_per_sub: 15
   # Chỉ lấy post mới trong vòng N giờ
-  max_age_hours: 6
+  max_age_hours: 8
   # Delay giữa các sub để tránh 429 (tăng lên 2-3 nếu bị rate limit)
   request_delay_seconds: 1.5
   subreddits:
-    - ChatGPT
-    - LocalLLaMA
-    - MachineLearning
-    - singularity
-    - ClaudeAI
-    - OpenAI
-    - artificial
+    - QualityAssurance      # QA tổng hợp
+    - softwaretesting       # software testing
+    - selenium              # Selenium automation
+    - QAJobs                # tin tuyển + thảo luận nghề QA
+    - SQL                   # SQL chung
+    - learnSQL              # học SQL
+    - PostgreSQL            # Postgres
+    - Database              # database tổng hợp
+    - webdev                # context dev cho tester web
 
 twitter:
   enabled: false  # Cloudflare chặn IP VN, bật lại khi dùng VPN/proxy
@@ -64,107 +66,177 @@ twitter:
     - AndrewYNg
 
 feeds:
-  max_age_hours: 12
+  max_age_hours: 24
   request_delay_seconds: 1.0
   sources:
-    - name: hackernews
-      url: "https://hnrss.org/newest?points=100"
+    # ---------- Hacker News (query theo chủ đề) ----------
+    - name: hn-testing
+      url: "https://hnrss.org/newest?q=software+testing"
       label: "hn"
-      max_items: 15
-    - name: hn-claude
-      url: "https://hnrss.org/newest?q=Claude"
+      max_items: 8
+    - name: hn-postman
+      url: "https://hnrss.org/newest?q=Postman+API"
       label: "hn"
-      max_items: 10
-    - name: hn-anthropic
-      url: "https://hnrss.org/newest?q=Anthropic"
-      label: "hn"
-      max_items: 10
-    - name: devto-ai
-      url: "https://dev.to/feed/tag/ai"
-      label: "devto"
       max_items: 6
-    - name: devto-llm
-      url: "https://dev.to/feed/tag/llm"
-      label: "devto"
+    - name: hn-sql
+      url: "https://hnrss.org/newest?q=SQL"
+      label: "hn"
+      max_items: 8
+    - name: hn-test-automation
+      url: "https://hnrss.org/newest?q=test+automation"
+      label: "hn"
       max_items: 6
-    - name: devto-claude
-      url: "https://dev.to/feed/tag/claude"
+
+    # ---------- Dev.to (theo tag) ----------
+    - name: devto-testing
+      url: "https://dev.to/feed/tag/testing"
       label: "devto"
       max_items: 8
-    - name: devto-anthropic
-      url: "https://dev.to/feed/tag/anthropic"
+    - name: devto-qa
+      url: "https://dev.to/feed/tag/qa"
       label: "devto"
       max_items: 8
-    - name: anthropic-news
-      url: "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml"
-      label: "anthropic"
-      max_items: 10
-    - name: claude-code-releases
-      url: "https://github.com/anthropics/claude-code/releases.atom"
-      label: "github"
-      max_items: 10
-    - name: claude-code-commits
-      url: "https://github.com/anthropics/claude-code/commits/main.atom"
+    - name: devto-automation
+      url: "https://dev.to/feed/tag/automation"
+      label: "devto"
+      max_items: 6
+    - name: devto-sql
+      url: "https://dev.to/feed/tag/sql"
+      label: "devto"
+      max_items: 8
+    - name: devto-database
+      url: "https://dev.to/feed/tag/database"
+      label: "devto"
+      max_items: 6
+    - name: devto-postman
+      url: "https://dev.to/feed/tag/postman"
+      label: "devto"
+      max_items: 6
+    - name: devto-selenium
+      url: "https://dev.to/feed/tag/selenium"
+      label: "devto"
+      max_items: 6
+
+    # ---------- Blog chuyên QA / testing ----------
+    - name: postman-blog
+      url: "https://blog.postman.com/feed/"
+      label: "postman"
+      max_items: 8
+    - name: ministry-of-testing
+      url: "https://www.ministryoftesting.com/feed.rss"
+      label: "moT"
+      max_items: 8
+    - name: software-testing-mag
+      url: "https://www.softwaretestingmagazine.com/feed/"
+      label: "stmag"
+      max_items: 8
+    - name: applitools-blog
+      url: "https://applitools.com/blog/feed/"
+      label: "applitools"
+      max_items: 6
+    - name: browserstack-blog
+      url: "https://www.browserstack.com/blog/feed/"
+      label: "bstack"
+      max_items: 6
+
+    # ---------- Tool releases (GitHub atom) ----------
+    - name: playwright-releases
+      url: "https://github.com/microsoft/playwright/releases.atom"
       label: "github"
       max_items: 6
-    - name: producthunt
-      url: "https://www.producthunt.com/feed"
-      label: "ph"
-      max_items: 10
-    - name: github-trending
-      url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml"
+    - name: cypress-releases
+      url: "https://github.com/cypress-io/cypress/releases.atom"
       label: "github"
-      max_items: 12
-    - name: huggingface
-      url: "https://huggingface.co/blog/feed.xml"
-      label: "hf"
-      max_items: 10
+      max_items: 6
+    - name: selenium-releases
+      url: "https://github.com/SeleniumHQ/selenium/releases.atom"
+      label: "github"
+      max_items: 6
+
+    # ---------- SQL / Database ----------
+    - name: planet-postgresql
+      url: "https://planet.postgresql.org/rss20.xml"
+      label: "pg"
+      max_items: 8
+    - name: brent-ozar
+      url: "https://www.brentozar.com/blog/feed/"
+      label: "sqlblog"
+      max_items: 6
+
+    # ---------- Tổng hợp dev ----------
     - name: lobsters
       url: "https://lobste.rs/rss"
       label: "lobsters"
-      max_items: 10
-    - name: simonwillison
-      url: "https://simonwillison.net/atom/everything/"
-      label: "simon"
-      max_items: 10
+      max_items: 8
 
 # Keyword filter trước khi gọi AI (tiết kiệm credit)
 keywords:
   whitelist:
+    # --- Testing / QA ---
+    - test
+    - testing
+    - tester
+    - QA
+    - quality assurance
+    - test case
+    - test plan
+    - test automation
+    - automation
+    - regression
+    - e2e
+    - end-to-end
+    - unit test
+    - integration test
+    - bug
+    - defect
+    - flaky
+    - coverage
+    - CI/CD
+    - pipeline
+    # --- Test tools ---
+    - Selenium
+    - Cypress
+    - Playwright
+    - Appium
+    - JMeter
+    - k6
+    - Robot Framework
+    - TestNG
+    - JUnit
+    - Pytest
+    - performance testing
+    - load testing
+    # --- API / Postman ---
+    - Postman
+    - API testing
+    - Newman
+    - REST
+    - GraphQL
+    - mock
+    - endpoint
+    - swagger
+    - OpenAPI
+    # --- SQL / Database ---
+    - SQL
+    - query
+    - database
+    - PostgreSQL
+    - postgres
+    - MySQL
+    - SQLite
+    - SQL Server
+    - index
+    - join
+    - stored procedure
+    - migration
+    - schema
+    # --- Chung ---
     - free
-    - trial
-    - miễn phí
-    - launch
-    - release
-    - release
-    - announce
-    - introducing
-    - GPT
-    - Claude
-    - Anthropic
-    - Claude Code
-    - MCP
-    - Model Context Protocol
-    - computer use
-    - Artifacts
-    - Projects
-    - Gemini
-    - Llama
-    - Mistral
-    - DeepSeek
-    - MiMo
-    - Qwen
-    - coupon
-    - discount
-    - limit
-    - quota
-    - increase
-    - udemy
     - course
-    - opensource
-    - open-source
-    - beta
-    - access
+    - tutorial
+    - release
+    - launch
+    - tips
   blacklist:
     - NSFW
     - onlyfans
@@ -172,3 +244,4 @@ keywords:
     - airdrop
     - shitcoin
     - rug pull
+    - crypto
