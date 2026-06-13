@@ -2,6 +2,7 @@
 import logging
 from collections import Counter
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import TYPE_CHECKING, List, Optional
 
 from src.models import Item
@@ -31,6 +32,8 @@ class Pipeline:
         self.quiet_start = sched.get("quiet_hours_start", 23)
         self.quiet_end = sched.get("quiet_hours_end", 7)
         self.quiet_min_score = sched.get("quiet_min_score", 9)
+        # Cố định múi giờ để quiet hours đúng dù chạy trên server UTC (Railway)
+        self.tz = ZoneInfo(sched.get("timezone", "Asia/Ho_Chi_Minh"))
         if self.ai_enabled:
             self.classifier = MiMoClassifier(
                 base_url=config["ai_filter"]["base_url"],
@@ -142,8 +145,8 @@ class Pipeline:
 
         stats["ai_passed"] = len(to_send)
 
-        # Step 4: quiet hours filter
-        hour = datetime.now().hour
+        # Step 4: quiet hours filter (theo giờ VN, không phụ thuộc giờ server)
+        hour = datetime.now(self.tz).hour
         in_quiet = (self.quiet_start <= hour or hour < self.quiet_end)
         if in_quiet:
             to_send = [it for it in to_send if (it.score or 0) >= self.quiet_min_score]

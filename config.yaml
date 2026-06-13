@@ -13,6 +13,7 @@ schedule:
   quiet_hours_start: 23        # không gửi từ 23h...
   quiet_hours_end: 7           # ...đến 7h sáng (trừ tin score >= quiet_min_score)
   quiet_min_score: 9           # tin cực hot vẫn gửi dù đang quiet hours
+  timezone: "Asia/Ho_Chi_Minh" # giờ VN cho quiet hours (Railway chạy UTC)
 
 ai_filter:
   enabled: true
