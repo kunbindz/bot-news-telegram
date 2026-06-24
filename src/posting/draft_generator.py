@@ -89,9 +89,9 @@ def _validate_draft(data: Dict[str, Any], candidates: List[Dict[str, Any]]) -> D
 
 class BlogDraftGenerator:
     def __init__(self, base_url: str, model: str, timeout: int = 45):
-        api_key = os.getenv("MIMO_API_KEY")
+        api_key = os.getenv("NARA_API_KEY")
         if not api_key:
-            raise RuntimeError("MIMO_API_KEY not set in .env")
+            raise RuntimeError("NARA_API_KEY not set in .env")
         self.model = model
         self.client = AsyncOpenAI(base_url=base_url, api_key=api_key, timeout=timeout)
 

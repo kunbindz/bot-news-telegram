@@ -1,4 +1,4 @@
-"""AI classifier using Xiaomi MiMo (OpenAI-compatible API)."""
+"""AI classifier using Nara Router (OpenAI-compatible API)."""
 import os
 import json
 import logging
@@ -48,13 +48,13 @@ Quy tắc cho điểm:
   tin trùng lặp của tin lớn đã ra cách đây nhiều ngày."""
 
 
-class MiMoClassifier:
+class AIClassifier:
     def __init__(self, base_url: str, model: str, timeout: int = 30):
         self.model = model
         self.timeout = timeout
-        api_key = os.getenv("MIMO_API_KEY")
+        api_key = os.getenv("NARA_API_KEY")
         if not api_key:
-            raise RuntimeError("MIMO_API_KEY not set in .env")
+            raise RuntimeError("NARA_API_KEY not set in .env")
         self.client = AsyncOpenAI(base_url=base_url, api_key=api_key,
                                   timeout=timeout)
         # Limit concurrent AI calls to avoid hammering

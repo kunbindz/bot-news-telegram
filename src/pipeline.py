@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, List, Optional
 from src.models import Item
 from src.filters.keyword import KeywordFilter
 from src.filters import dedupe
-from src.filters.ai_classifier import MiMoClassifier
+from src.filters.ai_classifier import AIClassifier
 from src.notifier.telegram_sender import TelegramSender
 
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ class Pipeline:
         # Cố định múi giờ để quiet hours đúng dù chạy trên server UTC (Railway)
         self.tz = ZoneInfo(sched.get("timezone", "Asia/Ho_Chi_Minh"))
         if self.ai_enabled:
-            self.classifier = MiMoClassifier(
+            self.classifier = AIClassifier(
                 base_url=config["ai_filter"]["base_url"],
                 model=config["ai_filter"]["model"],
                 timeout=config["ai_filter"]["timeout_seconds"],

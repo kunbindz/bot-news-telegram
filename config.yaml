@@ -17,8 +17,8 @@ schedule:
 
 ai_filter:
   enabled: true
-  base_url: "https://token-plan-sgp.xiaomimimo.com/v1"
-  model: "mimo-v2.5"
+  base_url: "https://router.bynara.id/v1"
+  model: "mimo-v2.5-free"
   min_score_to_notify: 6  # chỉ gửi item có score >= 6
   timeout_seconds: 30
 
