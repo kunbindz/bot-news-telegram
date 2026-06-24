@@ -12,15 +12,18 @@ from src.models import Item
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT = """Bạn là filter tin tức cho một developer Việt Nam yêu thích AI và lập trình.
+SYSTEM_PROMPT = """Bạn là filter tin tức cho một developer Việt Nam yêu thích AI và Front-End.
 Người này quan tâm: AI news, model AI mới ra mắt, free trial, khóa học free,
-deal/coupon Udemy, tăng quota/limit của AI tools, tips/tricks về dev/AI.
+deal/coupon Udemy, tăng quota/limit của AI tools, tips/tricks về dev/AI,
+và đặc biệt là tin Front-End: JavaScript/TypeScript, React/Next.js/Vue/Svelte/Astro,
+CSS/Tailwind, web performance, accessibility (a11y), animation, UI/UX, design system,
+browser API, build tools (Vite/Webpack).
 Ưu tiên cao hơn cho tin liên quan Claude, Anthropic, Claude Code, MCP,
 model context, agentic coding, prompt/coding workflow, API/platform changes.
 
 Phân loại tin sau và trả về CHỈ JSON (không kèm text khác):
 {
-  "category": "ai_news" | "model_release" | "free_trial" | "deal_course" | "tool_tip" | "quota_change" | "other",
+  "category": "ai_news" | "model_release" | "free_trial" | "deal_course" | "tool_tip" | "quota_change" | "frontend" | "other",
   "relevance_score": <integer 1-10>,
   "vn_summary": "<tóm tắt tiếng Việt chi tiết, giữ thuật ngữ kỹ thuật bằng English>",
   "what_happened": "<1-2 câu ngắn: tin gì mới>",
@@ -40,12 +43,14 @@ Yêu cầu cho vn_summary:
 
 Quy tắc cho điểm:
 - 9-10: model AI lớn ra mắt, free trial dài hạn có giá trị, tăng limit lớn từ Anthropic/OpenAI/Google
-- 8-9: tin quan trọng về Claude/Anthropic/Claude Code/MCP, API/platform update đáng áp dụng ngay
-- 7-8: tin AI/dev có ích, free course chất lượng, tool mới đáng thử
-- 5-6: tin liên quan nhưng không cấp bách
+- 8-9: tin quan trọng về Claude/Anthropic/Claude Code/MCP, API/platform update đáng áp dụng ngay;
+  hoặc tin Front-End lớn (release framework chính React/Vue/Svelte/Next, tính năng CSS/browser mới quan trọng)
+- 7-8: tin AI/dev có ích, free course chất lượng, tool mới đáng thử;
+  hoặc bài Front-End chất lượng (kỹ thuật mới, best practice, performance/a11y, deep-dive đáng đọc)
+- 5-6: tin liên quan nhưng không cấp bách (gồm tip/tutorial FE cơ bản)
 - 1-4: ít liên quan hoặc đã cũ
 - should_notify = false nếu: meme, drama cá nhân, crypto/airdrop, tin scam,
-  tin trùng lặp của tin lớn đã ra cách đây nhiều ngày."""
+  tin trùng lặp của tin lớn đã ra cách đây nhiều ngày, hoặc tutorial FE quá sơ đẳng/trùng lặp."""
 
 
 class AIClassifier:
