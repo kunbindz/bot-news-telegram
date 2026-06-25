@@ -52,6 +52,7 @@ def _candidate_payload(candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]
             "title": row.get("title"),
             "url": row.get("url"),
             "author": row.get("author"),
+            "published_at": row.get("published_at"),
             "score": row.get("score"),
             "category": row.get("category"),
             "content_excerpt": (row.get("content") or "")[:1800],

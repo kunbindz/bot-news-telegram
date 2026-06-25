@@ -21,6 +21,12 @@ CATEGORY_EMOJI = {
     "deal_course": "🎓",
     "tool_tip": "💡",
     "quota_change": "📈",
+    "frontend_release": "⚛️",
+    "frontend_tutorial": "📐",
+    "browser_update": "🌐",
+    "css_feature": "🎨",
+    "js_ecosystem": "📦",
+    "ts_backend": "🔷",
     "other": "🔖",
 }
 
@@ -35,6 +41,22 @@ SOURCE_EMOJI = {
     "lobsters": "🦞",
     "simon": "✍️",
     "anthropic": "🟣",
+    # Frontend & TS ecosystem
+    "css-tricks": "🎨",
+    "smashing": "📕",
+    "webdev": "🌐",
+    "josh": "✨",
+    "kentcdodds": "🧪",
+    "webkit": "🧭",
+    "chrome": "🔵",
+    "v8": "⚙️",
+    "nodejs": "💚",
+    "nestjs": "🐱",
+    "deno": "🦕",
+    "bun": "🍞",
+    "prisma": "🔺",
+    "angular": "🅰️",
+    "expo": "📱",
 }
 
 

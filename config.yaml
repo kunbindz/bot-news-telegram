@@ -129,6 +129,202 @@ feeds:
       label: "simon"
       max_items: 10
 
+    # ── Frontend Dev Blogs ──────────────────────
+    - name: css-tricks
+      url: "https://css-tricks.com/feed/"
+      label: "css-tricks"
+      max_items: 8
+    - name: smashing-magazine
+      url: "https://www.smashingmagazine.com/feed/"
+      label: "smashing"
+      max_items: 8
+    - name: web-dev
+      url: "https://web.dev/feed.xml"
+      label: "webdev"
+      max_items: 8
+    - name: devto-react
+      url: "https://dev.to/feed/tag/react"
+      label: "devto"
+      max_items: 6
+    - name: devto-nextjs
+      url: "https://dev.to/feed/tag/nextjs"
+      label: "devto"
+      max_items: 6
+    - name: devto-javascript
+      url: "https://dev.to/feed/tag/javascript"
+      label: "devto"
+      max_items: 6
+    - name: devto-css
+      url: "https://dev.to/feed/tag/css"
+      label: "devto"
+      max_items: 6
+    - name: devto-webdev
+      url: "https://dev.to/feed/tag/webdev"
+      label: "devto"
+      max_items: 6
+    - name: devto-typescript
+      url: "https://dev.to/feed/tag/typescript"
+      label: "devto"
+      max_items: 6
+    - name: josh-comeau
+      url: "https://www.joshwcomeau.com/rss.xml"
+      label: "josh"
+      max_items: 8
+    - name: kent-c-dodds
+      url: "https://kentcdodds.com/blog/rss.xml"
+      label: "kentcdodds"
+      max_items: 8
+    - name: hn-react
+      url: "https://hnrss.org/newest?q=React"
+      label: "hn"
+      max_items: 8
+    - name: hn-nextjs
+      url: "https://hnrss.org/newest?q=Next.js"
+      label: "hn"
+      max_items: 8
+    - name: webkit-blog
+      url: "https://webkit.org/feed/atom/"
+      label: "webkit"
+      max_items: 6
+    - name: chrome-blog
+      url: "https://developer.chrome.com/blog/feed.xml"
+      label: "chrome"
+      max_items: 8
+    - name: v8-blog
+      url: "https://v8.dev/blog.atom"
+      label: "v8"
+      max_items: 6
+    - name: nodejs-blog
+      url: "https://nodejs.org/en/feed/blog.xml"
+      label: "nodejs"
+      max_items: 6
+    - name: github-trending-js
+      url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/javascript.xml"
+      label: "github"
+      max_items: 8
+    - name: github-trending-ts
+      url: "https://mshibanami.github.io/GitHubTrendingRSS/daily/typescript.xml"
+      label: "github"
+      max_items: 8
+
+    # ── TypeScript Ecosystem ────────────────────
+    - name: devto-nestjs
+      url: "https://dev.to/feed/tag/nestjs"
+      label: "devto"
+      max_items: 6
+    - name: devto-angular
+      url: "https://dev.to/feed/tag/angular"
+      label: "devto"
+      max_items: 6
+    - name: devto-graphql
+      url: "https://dev.to/feed/tag/graphql"
+      label: "devto"
+      max_items: 6
+    - name: devto-prisma
+      url: "https://dev.to/feed/tag/prisma"
+      label: "devto"
+      max_items: 6
+    - name: devto-trpc
+      url: "https://dev.to/feed/tag/trpc"
+      label: "devto"
+      max_items: 6
+    - name: devto-deno
+      url: "https://dev.to/feed/tag/deno"
+      label: "devto"
+      max_items: 6
+    - name: devto-bun
+      url: "https://dev.to/feed/tag/bun"
+      label: "devto"
+      max_items: 6
+    - name: devto-reactnative
+      url: "https://dev.to/feed/tag/reactnative"
+      label: "devto"
+      max_items: 6
+    - name: devto-expo
+      url: "https://dev.to/feed/tag/expo"
+      label: "devto"
+      max_items: 6
+    - name: nestjs-blog
+      url: "https://trilon.io/blog/rss.xml"
+      label: "nestjs"
+      max_items: 6
+    - name: deno-blog
+      url: "https://deno.com/blog/rss.xml"
+      label: "deno"
+      max_items: 6
+    - name: bun-blog
+      url: "https://bun.sh/blog/rss.xml"
+      label: "bun"
+      max_items: 6
+    - name: prisma-blog
+      url: "https://www.prisma.io/blog/rss.xml"
+      label: "prisma"
+      max_items: 6
+    - name: angular-blog
+      url: "https://blog.angular.dev/feed"
+      label: "angular"
+      max_items: 6
+    - name: expo-blog
+      url: "https://blog.expo.dev/feed"
+      label: "expo"
+      max_items: 6
+    - name: hn-nestjs
+      url: "https://hnrss.org/newest?q=NestJS"
+      label: "hn"
+      max_items: 6
+    - name: hn-typescript
+      url: "https://hnrss.org/newest?q=TypeScript"
+      label: "hn"
+      max_items: 8
+    - name: hn-deno
+      url: "https://hnrss.org/newest?q=Deno"
+      label: "hn"
+      max_items: 6
+    - name: hn-bun
+      url: "https://hnrss.org/newest?q=Bun+runtime"
+      label: "hn"
+      max_items: 6
+    - name: nextjs-releases
+      url: "https://github.com/vercel/next.js/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: nestjs-releases
+      url: "https://github.com/nestjs/nest/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: typescript-releases
+      url: "https://github.com/microsoft/TypeScript/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: deno-releases
+      url: "https://github.com/denoland/deno/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: bun-releases
+      url: "https://github.com/oven-sh/bun/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: trpc-releases
+      url: "https://github.com/trpc/trpc/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: drizzle-releases
+      url: "https://github.com/drizzle-team/drizzle-orm/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: prisma-releases
+      url: "https://github.com/prisma/prisma/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: react-releases
+      url: "https://github.com/facebook/react/releases.atom"
+      label: "github"
+      max_items: 6
+    - name: vite-releases
+      url: "https://github.com/vitejs/vite/releases.atom"
+      label: "github"
+      max_items: 6
+
 # Keyword filter trước khi gọi AI (tiết kiệm credit)
 keywords:
   whitelist:
@@ -166,6 +362,83 @@ keywords:
     - open-source
     - beta
     - access
+    # Frontend keywords
+    - React
+    - Next.js
+    - Vue
+    - Nuxt
+    - Svelte
+    - Angular
+    - TypeScript
+    - JavaScript
+    - CSS
+    - Tailwind
+    - Vite
+    - Webpack
+    - Remix
+    - Astro
+    - RSC
+    - Server Components
+    - Suspense
+    - Hooks
+    - Zustand
+    - shadcn
+    - Radix
+    - Framer Motion
+    - performance
+    - Web Vitals
+    - Core Web Vitals
+    - SSR
+    - SSG
+    - ISR
+    - hydration
+    - bundle size
+    - tree shaking
+    - responsive
+    - accessibility
+    - a11y
+    - PWA
+    - service worker
+    - WebAssembly
+    - Wasm
+    - Deno
+    - Bun
+    - Node.js
+    - npm
+    - pnpm
+    # TypeScript ecosystem keywords
+    - NestJS
+    - Nest.js
+    - tRPC
+    - Prisma
+    - Drizzle
+    - Zod
+    - GraphQL
+    - Apollo
+    - Fastify
+    - Express
+    - Hono
+    - Elysia
+    - React Native
+    - Expo
+    - Turbopack
+    - Turborepo
+    - Monorepo
+    - Vitest
+    - Playwright
+    - Cypress
+    - Jest
+    - ESLint
+    - Prettier
+    - Biome
+    - SWC
+    - esbuild
+    - tsx
+    - type-safe
+    - end-to-end
+    - full-stack
+    - T3 Stack
+    - create-t3-app
   blacklist:
     - NSFW
     - onlyfans

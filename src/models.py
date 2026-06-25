@@ -1,5 +1,6 @@
 """Shared data structures."""
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List, Optional
 
 
@@ -11,6 +12,7 @@ class Item:
     content: str
     url: str
     author: str = ""
+    published_at: Optional[datetime] = None  # original publish time from source
     # Filled in by AI filter
     category: Optional[str] = None
     score: Optional[int] = None
