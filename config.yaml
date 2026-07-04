@@ -128,47 +128,15 @@ feeds:
       url: "https://simonwillison.net/atom/everything/"
       label: "simon"
       max_items: 10
-    # --- Front-End sources ---
-    - name: css-tricks
-      url: "https://css-tricks.com/feed/"
-      label: "fe"
-      max_items: 8
-    - name: smashing-magazine
-      url: "https://www.smashingmagazine.com/feed/"
-      label: "fe"
-      max_items: 8
-    - name: web-dev
-      url: "https://web.dev/static/blog/feed.xml"
-      label: "fe"
-      max_items: 8
+    # --- Front-End sources (framework blogs) ---
     - name: mozilla-hacks
       url: "https://hacks.mozilla.org/feed/"
-      label: "fe"
-      max_items: 6
-    - name: joshwcomeau
-      url: "https://www.joshwcomeau.com/rss.xml"
       label: "fe"
       max_items: 6
     - name: devto-frontend
       url: "https://dev.to/feed/tag/frontend"
       label: "fe"
       max_items: 8
-    - name: devto-javascript
-      url: "https://dev.to/feed/tag/javascript"
-      label: "fe"
-      max_items: 6
-    - name: devto-react
-      url: "https://dev.to/feed/tag/react"
-      label: "fe"
-      max_items: 6
-    - name: devto-css
-      url: "https://dev.to/feed/tag/css"
-      label: "fe"
-      max_items: 6
-    - name: kentcdodds
-      url: "https://kentcdodds.com/blog/rss.xml"
-      label: "fe"
-      max_items: 6
     - name: alistapart
       url: "https://alistapart.com/main/feed/"
       label: "fe"
@@ -397,7 +365,6 @@ keywords:
     - trial
     - miễn phí
     - launch
-    - release
     - release
     - announce
     - introducing
