@@ -1,6 +1,6 @@
 # AI Deal Bot
 
-Bot Telegram thu thập tin AI/dev/deal từ Reddit + Twitter, lọc bằng Xiaomi MiMo, gửi notification tiếng Việt.
+Bot Telegram thu thập tin AI/dev/deal từ Reddit + Twitter, lọc bằng OpenAI, gửi notification tiếng Việt.
 
 ## Yêu cầu
 
@@ -36,12 +36,12 @@ Mở file `.env` và điền 3 keys sau:
 3. Bot trả về `Id: 123456789` → copy số đó vào `TELEGRAM_CHAT_ID`
 4. **Quan trọng:** Nhắn `/start` cho chính bot bạn vừa tạo ở bước 1 (nếu không bot không gửi được tin nhắn cho bạn)
 
-### 3. Xiaomi MiMo API Key
+### 3. OpenAI API Key
 
-1. Vào https://platform.xiaomimimo.com
-2. Đăng nhập tài khoản (bạn đã có Token Plan 1.6B credits)
-3. Vào **API Keys** → tạo key mới
-4. Copy vào `MIMO_API_KEY`
+1. Vào https://platform.openai.com/api-keys
+2. Đăng nhập tài khoản
+3. Tạo key mới (**Create new secret key**)
+4. Copy vào `OPENAI_API_KEY`
 
 ## Chạy
 
@@ -105,7 +105,7 @@ Mở `config.yaml`:
 - **Đổi tần suất**: `schedule.reddit_interval_minutes`
 - **Đổi ngưỡng score**: `ai_filter.min_score_to_notify` (5 = nhiều tin, 8 = chỉ tin xuất sắc)
 - **Tắt AI filter**: `ai_filter.enabled: false` (sẽ gửi tất cả tin pass keyword + dedupe)
-- **Đổi model**: `ai_filter.model: "mimo-v2.5-pro"` nếu muốn quality cao hơn
+- **Đổi model**: `ai_filter.model: "gpt-4o"` nếu muốn quality cao hơn (mặc định `gpt-4o-mini` rẻ hơn)
 
 ## Cấu trúc dự án
 
@@ -126,7 +126,7 @@ ai-deal-bot/
     ├── filters/
     │   ├── keyword.py          # Pre-filter (tiết kiệm AI credit)
     │   ├── dedupe.py           # Dedupe vs SQLite
-    │   └── ai_classifier.py    # MiMo classifier
+    │   └── ai_classifier.py    # OpenAI classifier
     └── notifier/
         └── telegram_sender.py
 ```
@@ -139,7 +139,7 @@ ai-deal-bot/
 
 **Twitter/Nitter không trả về gì**: Nitter instances hay sập. Thử update danh sách trong `config.yaml` từ https://github.com/zedeus/nitter/wiki/Instances.
 
-**MiMo báo lỗi auth**: kiểm tra API key tại platform.xiaomimimo.com, check còn credits không.
+**OpenAI báo lỗi auth**: kiểm tra API key tại platform.openai.com/api-keys, check còn credits/billing không.
 
 **Bot gửi quá nhiều tin**: tăng `min_score_to_notify` lên 7 hoặc 8.
 

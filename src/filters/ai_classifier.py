@@ -1,4 +1,4 @@
-"""AI classifier using Nara Router (OpenAI-compatible API)."""
+"""AI classifier using OpenAI API."""
 import os
 import json
 import logging
@@ -57,10 +57,11 @@ class AIClassifier:
     def __init__(self, base_url: str, model: str, timeout: int = 30):
         self.model = model
         self.timeout = timeout
-        api_key = os.getenv("NARA_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            raise RuntimeError("NARA_API_KEY not set in .env")
-        self.client = AsyncOpenAI(base_url=base_url, api_key=api_key,
+            raise RuntimeError("OPENAI_API_KEY not set in .env")
+        # base_url None/empty -> dùng endpoint mặc định của OpenAI
+        self.client = AsyncOpenAI(base_url=base_url or None, api_key=api_key,
                                   timeout=timeout)
         # Limit concurrent AI calls to avoid hammering
         self.semaphore = asyncio.Semaphore(5)
