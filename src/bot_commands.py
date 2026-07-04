@@ -42,6 +42,12 @@ SOURCE_EMOJI = {
     "reddit": "🔴", "hn": "🟠", "devto": "💜",
     "ph": "🟡", "github": "⚫", "twitter": "🐦",
     "anthropic": "🟣",
+    # Frontend & TS ecosystem
+    "css-tricks": "🎨", "smashing": "📕", "webdev": "🌐",
+    "josh": "✨", "kentcdodds": "🧪", "webkit": "🧭",
+    "chrome": "🔵", "v8": "⚙️", "nodejs": "💚",
+    "nestjs": "🐱", "deno": "🦕", "bun": "🍞",
+    "prisma": "🔺", "angular": "🅰️", "expo": "📱",
 }
 
 

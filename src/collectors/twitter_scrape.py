@@ -60,6 +60,7 @@ class TwitterScrapeCollector:
                         content=content,
                         url=f"https://x.com/{account}/status/{tweet.id}",
                         author=account,
+                        published_at=tweet.date,
                     ))
                 all_items.extend(items)
                 logger.info(f"Twitter @{account}: collected {len(items)} candidates")

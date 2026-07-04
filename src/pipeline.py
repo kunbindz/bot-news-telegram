@@ -55,6 +55,10 @@ class Pipeline:
         for keyword in (
             "claude", "anthropic", "openai", "gpt", "gemini", "llama",
             "mistral", "deepseek", "qwen", "mcp", "agent", "cursor",
+            "react", "nextjs", "next.js", "vue", "svelte", "angular",
+            "typescript", "javascript", "css", "tailwind", "vite",
+            "nestjs", "nest.js", "deno", "bun", "prisma", "drizzle",
+            "trpc", "graphql", "expo", "react native",
         ):
             if keyword in source_hint or keyword in title_hint:
                 return keyword

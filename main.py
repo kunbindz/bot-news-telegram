@@ -8,6 +8,7 @@ Usage:
 import asyncio
 import argparse
 import logging
+import logging.handlers
 import os
 import sys
 from pathlib import Path
@@ -25,6 +26,8 @@ from src.collectors.twitter_scrape import TwitterScrapeCollector
 from src.pipeline import Pipeline
 from src.notifier.telegram_sender import TelegramSender
 from src.bot_commands import BotState, BotCommandHandlers
+from src.health import start_health_server
+from src.config_validation import validate_config
 
 
 # ---------- Logging ----------
@@ -35,7 +38,10 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     handlers=[
-        logging.FileHandler(LOG_DIR / "bot.log", encoding="utf-8"),
+        logging.handlers.RotatingFileHandler(
+            LOG_DIR / "bot.log", encoding="utf-8",
+            maxBytes=5 * 1024 * 1024, backupCount=3,
+        ),
         logging.StreamHandler(sys.stdout),
     ],
 )
@@ -86,10 +92,8 @@ async def cleanup_job():
 
 
 # ---------- Modes ----------
-async def run_once(config: dict):
-    """Run all collectors once and exit."""
-    await db.init_db()
-    pipeline = Pipeline(config)
+def _create_collectors(config: dict):
+    """Factory to create all collectors from config (DRY)."""
     reddit_coll = RedditRSSCollector(
         subreddits=config["reddit"]["subreddits"],
         posts_per_sub=config["reddit"]["posts_per_sub"],
@@ -106,6 +110,14 @@ async def run_once(config: dict):
         tweets_per_account=config["twitter"].get("tweets_per_account", 10),
         max_age_hours=config["twitter"].get("max_age_hours", 6),
     )
+    return reddit_coll, feeds_coll, twitter_coll
+
+
+async def run_once(config: dict):
+    """Run all collectors once and exit."""
+    await db.init_db()
+    pipeline = Pipeline(config)
+    reddit_coll, feeds_coll, twitter_coll = _create_collectors(config)
     try:
         await reddit_job(pipeline, reddit_coll)
         await feeds_job(pipeline, feeds_coll)
@@ -113,6 +125,7 @@ async def run_once(config: dict):
             await twitter_job(pipeline, twitter_coll)
     finally:
         await reddit_coll.close()
+        await db.close_conn()
 
 
 async def run_scheduler(config: dict):
@@ -120,22 +133,7 @@ async def run_scheduler(config: dict):
     await db.init_db()
     state = await BotState.load()
     pipeline = Pipeline(config, state=state)
-    reddit_coll = RedditRSSCollector(
-        subreddits=config["reddit"]["subreddits"],
-        posts_per_sub=config["reddit"]["posts_per_sub"],
-        max_age_hours=config["reddit"]["max_age_hours"],
-        request_delay=config["reddit"].get("request_delay_seconds", 1.5),
-    )
-    feeds_coll = FeedsRSSCollector(
-        sources=config["feeds"]["sources"],
-        max_age_hours=config["feeds"]["max_age_hours"],
-        request_delay=config["feeds"].get("request_delay_seconds", 1.0),
-    )
-    twitter_coll = TwitterScrapeCollector(
-        accounts=config["twitter"]["accounts"],
-        tweets_per_account=config["twitter"].get("tweets_per_account", 10),
-        max_age_hours=config["twitter"].get("max_age_hours", 6),
-    )
+    reddit_coll, feeds_coll, twitter_coll = _create_collectors(config)
 
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
@@ -192,7 +190,9 @@ async def run_scheduler(config: dict):
         except Exception as e:
             logger.error(f"Startup notification failed: {e}")
 
+        health_runner = None
         try:
+            health_runner = await start_health_server()
             while True:
                 await asyncio.sleep(3600)
         except (KeyboardInterrupt, asyncio.CancelledError):
@@ -200,6 +200,9 @@ async def run_scheduler(config: dict):
         finally:
             scheduler.shutdown()
             await reddit_coll.close()
+            await db.close_conn()
+            if health_runner:
+                await health_runner.cleanup()
             await app.updater.stop()
             await app.stop()
 
@@ -223,6 +226,7 @@ def main():
     args = parser.parse_args()
 
     config = load_config()
+    validate_config(config)
 
     if args.test_telegram:
         asyncio.run(test_telegram())

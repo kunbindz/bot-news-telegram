@@ -71,6 +71,7 @@ class RedditRSSCollector:
                 content=plain,
                 url=entry.link,
                 author=author,
+                published_at=created,
             ))
 
         logger.info(f"Reddit r/{sub_name}: collected {len(items)} candidates")
@@ -79,9 +80,10 @@ class RedditRSSCollector:
     async def collect(self) -> List[Item]:
         """Fetch RSS from all configured subreddits and return List[Item]."""
         headers = {"User-Agent": _USER_AGENT}
+        timeout = aiohttp.ClientTimeout(total=15, connect=5)
         all_items: List[Item] = []
 
-        async with aiohttp.ClientSession(headers=headers) as session:
+        async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
             for i, sub_name in enumerate(self.subreddits):
                 if i > 0:
                     await asyncio.sleep(self.request_delay)
