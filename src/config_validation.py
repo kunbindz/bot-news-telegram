@@ -15,7 +15,7 @@ def validate_config(config: Dict[str, Any]) -> None:
     if not isinstance(config, dict):
         raise ConfigValidationError("Configuration must be a dictionary.")
 
-    required_sections = ["schedule", "ai_filter", "posting", "reddit", "twitter", "feeds", "keywords"]
+    required_sections = ["schedule", "ai_filter", "posting", "reddit", "feeds", "keywords"]
     for section in required_sections:
         if section not in config:
             raise ConfigValidationError(f"Missing required config section: '{section}'")
@@ -29,9 +29,6 @@ def validate_config(config: Dict[str, Any]) -> None:
 
     _check_type(sched, "feeds_interval_minutes", int, "schedule")
     _check_range(sched["feeds_interval_minutes"], 1, 1440, "schedule.feeds_interval_minutes")
-
-    _check_type(sched, "twitter_interval_minutes", int, "schedule")
-    _check_range(sched["twitter_interval_minutes"], 1, 1440, "schedule.twitter_interval_minutes")
 
     _check_type(sched, "batch_send_delay_seconds", (int, float), "schedule")
     _check_range(sched["batch_send_delay_seconds"], 0, 60, "schedule.batch_send_delay_seconds")
@@ -117,23 +114,7 @@ def validate_config(config: Dict[str, Any]) -> None:
                 f"Invalid subreddit '{sub}' in reddit.subreddits list (must be a non-empty string)."
             )
 
-    # 5. Validate twitter
-    tw = config["twitter"]
-    _check_type(tw, "enabled", bool, "twitter")
-    _check_type(tw, "tweets_per_account", int, "twitter")
-    _check_range(tw["tweets_per_account"], 1, 100, "twitter.tweets_per_account")
-
-    _check_type(tw, "max_age_hours", int, "twitter")
-    _check_range(tw["max_age_hours"], 1, 72, "twitter.max_age_hours")
-
-    _check_type(tw, "accounts", list, "twitter")
-    for acc in tw["accounts"]:
-        if not isinstance(acc, str) or not acc.strip():
-            raise ConfigValidationError(
-                f"Invalid account '{acc}' in twitter.accounts list (must be a non-empty string)."
-            )
-
-    # 6. Validate feeds
+    # 5. Validate feeds
     f = config["feeds"]
     _check_type(f, "max_age_hours", int, "feeds")
     _check_range(f["max_age_hours"], 1, 72, "feeds.max_age_hours")

@@ -1,6 +1,6 @@
 # AI Deal Bot
 
-Bot Telegram thu thập tin AI/dev/deal từ Reddit + Twitter, lọc bằng OpenAI, gửi notification tiếng Việt.
+Bot Telegram thu thập tin AI/dev/deal từ Reddit + RSS feeds, lọc bằng OpenAI, gửi notification tiếng Việt.
 
 ## Yêu cầu
 
@@ -56,7 +56,7 @@ python main.py --once
 python main.py
 ```
 
-Mỗi 15 phút bot poll Reddit, mỗi 20 phút poll Twitter, lọc và gửi tin score ≥ 6 vào Telegram của bạn.
+Mỗi 60 phút bot poll Reddit + RSS feeds, lọc và gửi tin score ≥ 6 vào Telegram của bạn.
 
 ## Chạy nền 24/7 trên Windows
 
@@ -101,8 +101,8 @@ nssm remove AIDealBot    # xóa service
 Mở `config.yaml`:
 
 - **Thêm/bớt subreddit**: edit `reddit.subreddits`
-- **Thêm/bớt Twitter account**: edit `twitter.accounts`
-- **Đổi tần suất**: `schedule.reddit_interval_minutes`
+- **Thêm/bớt nguồn RSS**: edit `feeds.sources`
+- **Đổi tần suất**: `schedule.reddit_interval_minutes` / `schedule.feeds_interval_minutes`
 - **Đổi ngưỡng score**: `ai_filter.min_score_to_notify` (5 = nhiều tin, 8 = chỉ tin xuất sắc)
 - **Tắt AI filter**: `ai_filter.enabled: false` (sẽ gửi tất cả tin pass keyword + dedupe)
 - **Đổi model**: `ai_filter.model: "gpt-4o"` nếu muốn quality cao hơn (mặc định `gpt-4o-mini` rẻ hơn)
@@ -122,7 +122,7 @@ ai-deal-bot/
     ├── pipeline.py             # Orchestrator
     ├── collectors/
     │   ├── reddit_rss.py       # Reddit via public RSS (no auth)
-    │   └── twitter_nitter.py
+    │   └── feeds_rss.py        # HN / Dev.to / GitHub / FE blogs via RSS
     ├── filters/
     │   ├── keyword.py          # Pre-filter (tiết kiệm AI credit)
     │   ├── dedupe.py           # Dedupe vs SQLite
@@ -136,8 +136,6 @@ ai-deal-bot/
 **Telegram báo "chat not found"**: bạn chưa nhắn `/start` cho bot. Vào Telegram, mở bot vừa tạo, nhấn Start.
 
 **Reddit báo 429**: bot bị rate limit. Tăng `request_delay_seconds` trong config.yaml lên 2-3 giây, hoặc giảm số subreddit.
-
-**Twitter/Nitter không trả về gì**: Nitter instances hay sập. Thử update danh sách trong `config.yaml` từ https://github.com/zedeus/nitter/wiki/Instances.
 
 **OpenAI báo lỗi auth**: kiểm tra API key tại platform.openai.com/api-keys, check còn credits/billing không.
 

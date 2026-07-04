@@ -8,7 +8,6 @@ class TestConfigValidation(unittest.TestCase):
             "schedule": {
                 "reddit_interval_minutes": 15,
                 "feeds_interval_minutes": 20,
-                "twitter_interval_minutes": 30,
                 "batch_send_delay_seconds": 2,
                 "max_send_per_cycle": 5,
                 "max_per_source_per_cycle": 2,
@@ -41,12 +40,6 @@ class TestConfigValidation(unittest.TestCase):
                 "max_age_hours": 6,
                 "request_delay_seconds": 1.5,
                 "subreddits": ["ChatGPT", "LocalLLaMA"],
-            },
-            "twitter": {
-                "enabled": False,
-                "tweets_per_account": 10,
-                "max_age_hours": 6,
-                "accounts": ["AnthropicAI"],
             },
             "feeds": {
                 "max_age_hours": 12,

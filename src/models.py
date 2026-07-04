@@ -7,7 +7,7 @@ from typing import List, Optional
 @dataclass
 class Item:
     """A piece of content from any source."""
-    source: str          # e.g. "reddit:r/ClaudeAI" or "twitter:@AnthropicAI"
+    source: str          # e.g. "reddit:r/ClaudeAI" or "feeds:hackernews"
     title: str
     content: str
     url: str

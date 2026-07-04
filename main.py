@@ -22,7 +22,6 @@ from telegram.ext import ApplicationBuilder, CommandHandler
 from src import db
 from src.collectors.reddit_rss import RedditRSSCollector
 from src.collectors.feeds_rss import FeedsRSSCollector
-from src.collectors.twitter_scrape import TwitterScrapeCollector
 from src.pipeline import Pipeline
 from src.notifier.telegram_sender import TelegramSender
 from src.bot_commands import BotState, BotCommandHandlers
@@ -68,15 +67,6 @@ async def reddit_job(pipeline: Pipeline, collector: RedditRSSCollector):
         logger.exception(f"Reddit job error: {e}")
 
 
-async def twitter_job(pipeline: Pipeline, collector: TwitterScrapeCollector):
-    logger.info("=== Twitter cycle start ===")
-    try:
-        items = await collector.collect()
-        await pipeline.process(items, "twitter")
-    except Exception as e:
-        logger.exception(f"Twitter job error: {e}")
-
-
 async def feeds_job(pipeline: Pipeline, collector: FeedsRSSCollector):
     logger.info("=== Feeds cycle start ===")
     try:
@@ -105,24 +95,17 @@ def _create_collectors(config: dict):
         max_age_hours=config["feeds"]["max_age_hours"],
         request_delay=config["feeds"].get("request_delay_seconds", 1.0),
     )
-    twitter_coll = TwitterScrapeCollector(
-        accounts=config["twitter"]["accounts"],
-        tweets_per_account=config["twitter"].get("tweets_per_account", 10),
-        max_age_hours=config["twitter"].get("max_age_hours", 6),
-    )
-    return reddit_coll, feeds_coll, twitter_coll
+    return reddit_coll, feeds_coll
 
 
 async def run_once(config: dict):
     """Run all collectors once and exit."""
     await db.init_db()
     pipeline = Pipeline(config)
-    reddit_coll, feeds_coll, twitter_coll = _create_collectors(config)
+    reddit_coll, feeds_coll = _create_collectors(config)
     try:
         await reddit_job(pipeline, reddit_coll)
         await feeds_job(pipeline, feeds_coll)
-        if config["twitter"].get("enabled", False):
-            await twitter_job(pipeline, twitter_coll)
     finally:
         await reddit_coll.close()
         await db.close_conn()
@@ -133,7 +116,7 @@ async def run_scheduler(config: dict):
     await db.init_db()
     state = await BotState.load()
     pipeline = Pipeline(config, state=state)
-    reddit_coll, feeds_coll, twitter_coll = _create_collectors(config)
+    reddit_coll, feeds_coll = _create_collectors(config)
 
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
@@ -147,12 +130,6 @@ async def run_scheduler(config: dict):
         minutes=config["schedule"]["feeds_interval_minutes"],
         args=[pipeline, feeds_coll],
     )
-    if config["twitter"].get("enabled", False):
-        scheduler.add_job(
-            twitter_job, "interval",
-            minutes=config["schedule"]["twitter_interval_minutes"],
-            args=[pipeline, twitter_coll],
-        )
     scheduler.add_job(cleanup_job, "cron", hour=3)  # daily 3am
     scheduler.start()
 
@@ -177,8 +154,6 @@ async def run_scheduler(config: dict):
         # Run first cycle immediately
         await reddit_job(pipeline, reddit_coll)
         await feeds_job(pipeline, feeds_coll)
-        if config["twitter"].get("enabled", False):
-            await twitter_job(pipeline, twitter_coll)
 
         # Send startup notification
         try:

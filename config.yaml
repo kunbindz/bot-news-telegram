@@ -5,7 +5,6 @@
 schedule:
   reddit_interval_minutes: 60
   feeds_interval_minutes: 60
-  twitter_interval_minutes: 60
   batch_send_delay_seconds: 2  # delay giữa các message Telegram để tránh rate limit
   max_send_per_cycle: 5        # tối đa N tin mỗi cycle, tránh spam
   max_per_source_per_cycle: 2  # tránh 1 nguồn chiếm hết batch
@@ -48,21 +47,6 @@ reddit:
     - ClaudeAI
     - OpenAI
     - artificial
-
-twitter:
-  enabled: false  # Cloudflare chặn IP VN, bật lại khi dùng VPN/proxy
-  tweets_per_account: 10
-  max_age_hours: 6
-  accounts:
-    - AnthropicAI
-    - OpenAI
-    - GoogleDeepMind
-    - GoogleAI
-    - rowancheung
-    - minchoi
-    - emollick
-    - sama
-    - AndrewYNg
 
 feeds:
   max_age_hours: 12

@@ -40,7 +40,7 @@ class BotState:
 
 SOURCE_EMOJI = {
     "reddit": "🔴", "hn": "🟠", "devto": "💜",
-    "ph": "🟡", "github": "⚫", "twitter": "🐦",
+    "ph": "🟡", "github": "⚫",
     "anthropic": "🟣",
     # Frontend & TS ecosystem
     "css-tricks": "🎨", "smashing": "📕", "webdev": "🌐",

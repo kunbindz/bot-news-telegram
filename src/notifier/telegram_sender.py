@@ -36,7 +36,6 @@ SOURCE_EMOJI = {
     "devto": "💜",
     "ph": "🟡",
     "github": "⚫",
-    "twitter": "🐦",
     "hf": "🤗",
     "lobsters": "🦞",
     "simon": "✍️",
