@@ -12,6 +12,22 @@ from src.models import Item
 logger = logging.getLogger(__name__)
 
 
+def _as_text(value) -> str:
+    """Coerce a model field to a string.
+
+    Some models return summary fields as a JSON array of bullet points
+    instead of a string; join those into newline-separated text so they
+    can be stored and rendered safely.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return "\n".join(
+            f"- {str(v).strip()}" for v in value if str(v).strip()
+        )
+    return str(value)
+
+
 SYSTEM_PROMPT = """Bạn là filter tin tức cho một developer Việt Nam yêu thích AI, lập trình, và Frontend development.
 Người này quan tâm:
 - AI news, model AI mới ra mắt, free trial, khóa học free, deal/coupon Udemy,
@@ -80,10 +96,11 @@ class AIClassifier:
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY not set in .env")
         # base_url None/empty -> dùng endpoint mặc định của OpenAI
+        # max_retries cao hơn để chịu được rate limit (429) của gói free
         self.client = AsyncOpenAI(base_url=base_url or None, api_key=api_key,
-                                  timeout=timeout)
-        # Limit concurrent AI calls to avoid hammering
-        self.semaphore = asyncio.Semaphore(5)
+                                  timeout=timeout, max_retries=5)
+        # Giới hạn concurrency thấp để tránh vượt per-minute limit của gói free
+        self.semaphore = asyncio.Semaphore(2)
 
     async def classify(self, item: Item) -> Item:
         """Classify a single item. Mutates and returns the item."""
@@ -109,10 +126,10 @@ class AIClassifier:
 
                 item.category = data.get("category", "other")
                 item.score = int(data.get("relevance_score", 0))
-                item.vn_summary = data.get("vn_summary", "")
-                item.summary_what = data.get("what_happened", "")
-                item.summary_why = data.get("why_it_matters", "")
-                item.summary_action = data.get("action", "")
+                item.vn_summary = _as_text(data.get("vn_summary"))
+                item.summary_what = _as_text(data.get("what_happened"))
+                item.summary_why = _as_text(data.get("why_it_matters"))
+                item.summary_action = _as_text(data.get("action"))
                 raw_tags = data.get("tags", [])
                 item.summary_tags = (
                     [str(tag).strip() for tag in raw_tags if str(tag).strip()]

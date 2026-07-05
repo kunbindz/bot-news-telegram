@@ -167,8 +167,11 @@ class Pipeline:
                 f"per_source={self.max_per_source}, per_topic={self.max_per_topic})"
             )
 
-        # Step 6: record all (so we don't re-process), then send filtered
-        await dedupe.record_items(items, sent=False)
+        # Step 6: record processed items (so we don't re-process), then send filtered.
+        # Bỏ qua item classify lỗi (vd rate limit 429) để cycle sau thử lại,
+        # tránh mất tin vĩnh viễn khi gặp rate limit của gói free.
+        recordable = [it for it in items if it.category != "error"]
+        await dedupe.record_items(recordable, sent=False)
 
         # Skip send if paused
         if self.state and self.state.paused:
