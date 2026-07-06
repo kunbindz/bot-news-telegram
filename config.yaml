@@ -17,7 +17,7 @@ schedule:
 ai_filter:
   enabled: true
   base_url: "https://router.bynara.id/v1"  # Nara Router (OpenAI-compatible)
-  model: "mistral-large"
+  model: "deepseek-v4-flash-bynara"
   min_score_to_notify: 6  # chỉ gửi item có score >= 6
   timeout_seconds: 30
 

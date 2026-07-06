@@ -7,6 +7,7 @@ from typing import List
 
 from openai import AsyncOpenAI
 
+from src.ai_compat import json_response_format
 from src.models import Item
 
 logger = logging.getLogger(__name__)
@@ -92,9 +93,10 @@ class AIClassifier:
     def __init__(self, base_url: str, model: str, timeout: int = 30):
         self.model = model
         self.timeout = timeout
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY") or os.getenv("NARA_API_KEY")
         if not api_key:
-            raise RuntimeError("OPENAI_API_KEY not set in .env")
+            raise RuntimeError("OPENAI_API_KEY or NARA_API_KEY not set in .env")
+        self.response_format = json_response_format(base_url, model)
         # base_url None/empty -> dùng endpoint mặc định của OpenAI
         # max_retries cao hơn để chịu được rate limit (429) của gói free
         self.client = AsyncOpenAI(base_url=base_url or None, api_key=api_key,
@@ -112,15 +114,17 @@ class AIClassifier:
                     f"Tiêu đề: {item.title}\n"
                     f"Nội dung: {item.content[:3000]}"
                 )
-                resp = await self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[
+                request = {
+                    "model": self.model,
+                    "messages": [
                         {"role": "system", "content": SYSTEM_PROMPT},
                         {"role": "user", "content": user_msg},
                     ],
-                    response_format={"type": "json_object"},
-                    temperature=0.3,
-                )
+                    "temperature": 0.3,
+                }
+                if self.response_format:
+                    request["response_format"] = self.response_format
+                resp = await self.client.chat.completions.create(**request)
                 raw = resp.choices[0].message.content
                 data = json.loads(raw)
 
