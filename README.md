@@ -36,12 +36,10 @@ Mở file `.env` và điền 3 keys sau:
 3. Bot trả về `Id: 123456789` → copy số đó vào `TELEGRAM_CHAT_ID`
 4. **Quan trọng:** Nhắn `/start` cho chính bot bạn vừa tạo ở bước 1 (nếu không bot không gửi được tin nhắn cho bạn)
 
-### 3. OpenAI API Key
+### 3. HH Tech API Key
 
-1. Vào https://platform.openai.com/api-keys
-2. Đăng nhập tài khoản
-3. Tạo key mới (**Create new secret key**)
-4. Copy vào `OPENAI_API_KEY`
+1. Lấy API key từ HH Tech API
+2. Copy vào `API_KEY`
 
 ## Chạy
 
@@ -137,7 +135,7 @@ ai-deal-bot/
 
 **Reddit báo 429**: bot bị rate limit. Tăng `request_delay_seconds` trong config.yaml lên 2-3 giây, hoặc giảm số subreddit.
 
-**OpenAI báo lỗi auth**: kiểm tra API key tại platform.openai.com/api-keys, check còn credits/billing không.
+**HH Tech API báo lỗi auth**: kiểm tra `API_KEY` trong `.env`, check còn credits/billing không.
 
 **Bot gửi quá nhiều tin**: tăng `min_score_to_notify` lên 7 hoặc 8.
 

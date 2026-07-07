@@ -3,8 +3,8 @@
 # =========================================
 
 schedule:
-  reddit_interval_minutes: 60
-  feeds_interval_minutes: 60
+  reddit_interval_minutes: 30
+  feeds_interval_minutes: 30
   batch_send_delay_seconds: 2  # delay giữa các message Telegram để tránh rate limit
   max_send_per_cycle: 5        # tối đa N tin mỗi cycle, tránh spam
   max_per_source_per_cycle: 2  # tránh 1 nguồn chiếm hết batch
@@ -16,8 +16,8 @@ schedule:
 
 ai_filter:
   enabled: true
-  base_url: "https://router.bynara.id/v1"  # Nara Router (OpenAI-compatible)
-  model: "deepseek-v4-flash-bynara"
+  base_url: "https://hhtechapi.com/v1"  # HH Tech API (OpenAI-compatible)
+  model: "deepseek-v4"
   min_score_to_notify: 6  # chỉ gửi item có score >= 6
   timeout_seconds: 30
 

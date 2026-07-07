@@ -19,8 +19,8 @@ class TestConfigValidation(unittest.TestCase):
             },
             "ai_filter": {
                 "enabled": True,
-                "base_url": "https://router.bynara.id/v1",
-                "model": "mimo-v2.5-free",
+                "base_url": "https://hhtechapi.com/v1",
+                "model": "deepseek-v4",
                 "min_score_to_notify": 6,
                 "timeout_seconds": 30,
             },
