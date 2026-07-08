@@ -17,6 +17,16 @@ def api_key_from_env() -> str:
     return api_key
 
 
+def base_url_from_env(fallback: str = "") -> str:
+    """Return BASE_URL from .env if set, otherwise the config fallback."""
+    return (os.getenv("BASE_URL") or "").strip() or fallback
+
+
+def model_from_env(fallback: str = "") -> str:
+    """Return MODEL from .env if set, otherwise the config fallback."""
+    return (os.getenv("MODEL") or "").strip() or fallback
+
+
 def json_response_format(base_url: str, model: str) -> Optional[dict]:
     """Return native JSON mode options when the configured provider supports it."""
     provider_hint = f"{base_url or ''} {model or ''}".lower()

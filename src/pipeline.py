@@ -9,6 +9,7 @@ from src.models import Item
 from src.filters.keyword import KeywordFilter
 from src.filters import dedupe
 from src.filters.ai_classifier import AIClassifier
+from src.ai_compat import base_url_from_env, model_from_env
 from src.notifier.telegram_sender import TelegramSender
 
 if TYPE_CHECKING:
@@ -36,8 +37,8 @@ class Pipeline:
         self.tz = ZoneInfo(sched.get("timezone", "Asia/Ho_Chi_Minh"))
         if self.ai_enabled:
             self.classifier = AIClassifier(
-                base_url=config["ai_filter"]["base_url"],
-                model=config["ai_filter"]["model"],
+                base_url=base_url_from_env(config["ai_filter"]["base_url"]),
+                model=model_from_env(config["ai_filter"]["model"]),
                 timeout=config["ai_filter"]["timeout_seconds"],
             )
         self.sender = TelegramSender(

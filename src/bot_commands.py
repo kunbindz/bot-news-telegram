@@ -11,6 +11,7 @@ from telegram.ext import ContextTypes
 from src import db
 from src.posting.blog_writer import write_draft
 from src.posting.draft_generator import BlogDraftGenerator, DraftGenerationError
+from src.ai_compat import base_url_from_env, model_from_env
 
 logger = logging.getLogger(__name__)
 
@@ -212,8 +213,8 @@ class BotCommandHandlers:
 
         try:
             generator = BlogDraftGenerator(
-                base_url=self.config["ai_filter"]["base_url"],
-                model=posting.get("model") or self.config["ai_filter"]["model"],
+                base_url=base_url_from_env(self.config["ai_filter"]["base_url"]),
+                model=posting.get("model") or model_from_env(self.config["ai_filter"]["model"]),
                 timeout=int(posting.get("timeout_seconds", 60)),
             )
             draft = await generator.generate(candidates)
