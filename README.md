@@ -100,45 +100,41 @@ nssm remove AIDealBot    # xóa service
    - Start in: `D:\Projects\ai-deal-bot`
 4. Properties → Settings → uncheck "Stop the task if it runs longer than..."
 
-## Deploy 24/7 trên Fly.io
+## Deploy miễn phí trên GitHub Actions
 
-Bot cần chạy liên tục (để nhận lệnh Telegram + poll mỗi 60 phút) và cần ổ đĩa bền
-cho SQLite (dedupe), nên dùng Fly.io với 1 volume. Các file `Dockerfile`, `.dockerignore`,
-`fly.toml` đã có sẵn trong repo.
+Chạy bot theo lịch (mỗi giờ 1 lần) bằng GitHub Actions — miễn phí, không cần thẻ.
+Workflow đã có sẵn ở `.github/workflows/bot.yml`, gọi `python main.py --once`.
 
-**1. Cài & đăng nhập flyctl** (một lần):
-```powershell
-iwr https://fly.io/install.ps1 -useb | iex
-fly auth login
-```
+> ⚠️ **Đánh đổi:** không còn tiến trình chạy liên tục nên **các lệnh Telegram tương tác
+> mất tác dụng** (`/pause`, `/status`, `/top`, `/draft_top`, `/score`, `/stats`).
+> Bot chỉ tự đẩy tin mỗi giờ. Cần lệnh tương tác thì phải host 24/7 (VD Fly.io / Oracle Cloud).
 
-**2. Tạo app + volume** (chạy trong thư mục repo):
+**1. Push repo lên GitHub** (nếu chưa có remote):
 ```bash
-fly launch --no-deploy --copy-config --name bot-news-telegram --region sin
-fly volumes create bot_data --size 1 --region sin
-```
-> Nếu hỏi tạo Postgres/Redis → chọn **No**. Nếu tên app đã bị lấy, đổi `app = "..."` trong `fly.toml`.
-
-**3. Nạp secrets** (thay bằng giá trị thật):
-```bash
-fly secrets set \
-  TELEGRAM_BOT_TOKEN="123:ABC..." \
-  TELEGRAM_CHAT_ID="123456789" \
-  API_KEY="sk-..." \
-  BASE_URL="https://api.pateway.ai" \
-  MODEL="deepseek-v4-flash"
+git remote add origin https://github.com/<user>/<repo>.git
+git push -u origin master
 ```
 
-**4. Deploy & xem log:**
-```bash
-fly deploy
-fly logs
-```
+**2. Nạp secrets** — vào repo trên GitHub → **Settings → Secrets and variables → Actions
+→ New repository secret**, thêm 5 secret:
+
+| Name | Ví dụ |
+|------|-------|
+| `TELEGRAM_BOT_TOKEN` | `123:ABC...` |
+| `TELEGRAM_CHAT_ID` | `123456789` |
+| `API_KEY` | `sk-...` |
+| `BASE_URL` | `https://api.pateway.ai` |
+| `MODEL` | `deepseek-v4-flash` |
+
+**3. Chạy thử** — tab **Actions → news-bot → Run workflow** (nút `workflow_dispatch`).
+Sau đó nó tự chạy mỗi giờ theo cron.
 
 **Ghi chú:**
-- Trên Fly không có `.env` — biến môi trường lấy từ `fly secrets` (đã loại `.env` khỏi image qua `.dockerignore`).
-- `DB_PATH=/data/db.sqlite` (khai báo trong `fly.toml`) trỏ SQLite vào volume → không mất dedupe khi restart.
-- Máy mặc định `shared-cpu-1x` / 256MB (~$2.5/tháng). Nếu gặp OOM: `fly scale memory 512`.
+- DB dedupe được giữ giữa các lần chạy qua `actions/cache` (không gửi trùng tin).
+- Cron GitHub dùng UTC và có thể trễ 5–15 phút; tần suất thực tế ~mỗi giờ.
+- Quiet hours / diversity cap trong `config.yaml` vẫn áp dụng bình thường.
+- GitHub **tạm dừng** scheduled workflow nếu repo không có hoạt động trong 60 ngày —
+  chỉ cần vào bấm "Enable workflow" lại là chạy tiếp.
 
 ## Tùy chỉnh
 

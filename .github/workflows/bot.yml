@@ -1,0 +1,56 @@
+name: news-bot
+
+on:
+  schedule:
+    # Mỗi giờ chạy 1 lần (phút 17 để tránh giờ cao điểm :00 của GitHub, hay bị delay).
+    # Cron của GitHub Actions dùng UTC và có thể trễ 5-15 phút khi hệ thống bận.
+    - cron: "17 * * * *"
+  workflow_dispatch: {}   # cho phép bấm chạy tay trong tab Actions
+
+# Không cho 2 run chồng nhau (tránh ghi DB cùng lúc). Không hủy run đang chạy.
+concurrency:
+  group: news-bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      # Khôi phục DB dedupe từ run trước (nếu có). restore-keys lấy cache mới nhất
+      # có prefix "bot-db-".
+      - name: Restore SQLite DB
+        uses: actions/cache/restore@v4
+        with:
+          path: db.sqlite
+          key: bot-db-${{ github.run_id }}
+          restore-keys: |
+            bot-db-
+
+      - name: Run one cycle
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          API_KEY: ${{ secrets.API_KEY }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          MODEL: ${{ secrets.MODEL }}
+          DB_PATH: db.sqlite
+        run: python main.py --once
+
+      # Lưu DB sau khi chạy (key unique theo run_id nên không đụng cache cũ).
+      - name: Save SQLite DB
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: db.sqlite
+          key: bot-db-${{ github.run_id }}
