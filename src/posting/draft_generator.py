@@ -3,9 +3,7 @@ import json
 import logging
 from typing import Any, Dict, List
 
-from openai import AsyncOpenAI
-
-from src.ai_compat import api_key_from_env, json_response_format
+from src.ai_compat import AIChatClient
 from src.posting.blog_writer import DraftPost
 from src.posting.prompts import DRAFT_SYSTEM_PROMPT
 
@@ -90,10 +88,8 @@ def _validate_draft(data: Dict[str, Any], candidates: List[Dict[str, Any]]) -> D
 
 class BlogDraftGenerator:
     def __init__(self, base_url: str, model: str, timeout: int = 45):
-        api_key = api_key_from_env()
         self.model = model
-        self.response_format = json_response_format(base_url, model)
-        self.client = AsyncOpenAI(base_url=base_url or None, api_key=api_key, timeout=timeout)
+        self.client = AIChatClient(base_url=base_url, model=model, timeout=timeout)
 
     async def generate(self, candidates: List[Dict[str, Any]]) -> DraftPost:
         if not candidates:
@@ -105,18 +101,10 @@ class BlogDraftGenerator:
             "Hãy viết bài chia sẻ học hỏi, bám sát nguồn.\n\n"
             f"{json.dumps(payload, ensure_ascii=False, indent=2)}"
         )
-        request = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": DRAFT_SYSTEM_PROMPT},
-                {"role": "user", "content": user_msg},
-            ],
-            "temperature": 0.35,
-        }
-        if self.response_format:
-            request["response_format"] = self.response_format
-        resp = await self.client.chat.completions.create(**request)
-        raw = resp.choices[0].message.content
+        raw = await self.client.complete(
+            system=DRAFT_SYSTEM_PROMPT, user=user_msg,
+            temperature=0.35, max_tokens=8192,
+        )
         try:
             data = json.loads(_clean_json_text(raw))
         except json.JSONDecodeError as exc:

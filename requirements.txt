@@ -4,6 +4,7 @@ apscheduler==3.10.4
 python-dotenv==1.0.1
 pyyaml==6.0.2
 openai==1.54.0
+anthropic==0.116.0
 httpx>=0.27.0,<0.28.0
 aiohttp==3.10.10
 aiosqlite==0.20.0

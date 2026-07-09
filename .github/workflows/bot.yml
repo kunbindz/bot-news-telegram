@@ -1,10 +1,8 @@
 name: news-bot
 
 on:
-  schedule:
-    # Mỗi giờ chạy 1 lần (phút 17 để tránh giờ cao điểm :00 của GitHub, hay bị delay).
-    # Cron của GitHub Actions dùng UTC và có thể trễ 5-15 phút khi hệ thống bận.
-    - cron: "17 * * * *"
+  # Cron đã tắt: production chạy trên Railway (worker: python main.py).
+  # Bật lại cron ở đây sẽ khiến bot đăng TRÙNG với Railway. Chỉ để chạy tay khi cần.
   workflow_dispatch: {}   # cho phép bấm chạy tay trong tab Actions
 
 # Không cho 2 run chồng nhau (tránh ghi DB cùng lúc). Không hủy run đang chạy.

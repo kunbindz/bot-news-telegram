@@ -1,12 +1,9 @@
-"""AI classifier using OpenAI API."""
-import json
+"""AI classifier — works over both OpenAI and Anthropic gateway protocols."""
 import logging
 import asyncio
 from typing import List
 
-from openai import AsyncOpenAI
-
-from src.ai_compat import api_key_from_env, json_response_format
+from src.ai_compat import AIChatClient, loads_json_lenient
 from src.models import Item
 
 logger = logging.getLogger(__name__)
@@ -92,12 +89,9 @@ class AIClassifier:
     def __init__(self, base_url: str, model: str, timeout: int = 30):
         self.model = model
         self.timeout = timeout
-        api_key = api_key_from_env()
-        self.response_format = json_response_format(base_url, model)
-        # base_url None/empty -> dùng endpoint mặc định của OpenAI
         # max_retries cao hơn để chịu được rate limit (429) của gói free
-        self.client = AsyncOpenAI(base_url=base_url or None, api_key=api_key,
-                                  timeout=timeout, max_retries=5)
+        self.client = AIChatClient(base_url=base_url, model=model,
+                                   timeout=timeout, max_retries=5)
         # Giới hạn concurrency thấp để tránh vượt per-minute limit của gói free
         self.semaphore = asyncio.Semaphore(2)
 
@@ -111,19 +105,11 @@ class AIClassifier:
                     f"Tiêu đề: {item.title}\n"
                     f"Nội dung: {item.content[:3000]}"
                 )
-                request = {
-                    "model": self.model,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_msg},
-                    ],
-                    "temperature": 0.3,
-                }
-                if self.response_format:
-                    request["response_format"] = self.response_format
-                resp = await self.client.chat.completions.create(**request)
-                raw = resp.choices[0].message.content
-                data = json.loads(raw)
+                raw = await self.client.complete(
+                    system=SYSTEM_PROMPT, user=user_msg,
+                    temperature=0.3, max_tokens=2048,
+                )
+                data = loads_json_lenient(raw)
 
                 item.category = data.get("category", "other")
                 item.score = int(data.get("relevance_score", 0))
