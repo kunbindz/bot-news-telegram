@@ -36,10 +36,16 @@ Mở file `.env` và điền 3 keys sau:
 3. Bot trả về `Id: 123456789` → copy số đó vào `TELEGRAM_CHAT_ID`
 4. **Quan trọng:** Nhắn `/start` cho chính bot bạn vừa tạo ở bước 1 (nếu không bot không gửi được tin nhắn cho bạn)
 
-### 3. HH Tech API Key
+### 3. AI Provider (OpenAI-compatible)
 
-1. Lấy API key từ HH Tech API
-2. Copy vào `API_KEY`
+1. Lấy API key từ nhà cung cấp → copy vào `API_KEY`
+2. (Tùy chọn) `BASE_URL` và `MODEL` để đổi endpoint/model chủ động qua `.env`.
+   Bỏ trống sẽ dùng giá trị mặc định trong `config.yaml` (`ai_filter.base_url` / `ai_filter.model`).
+   Ví dụ trong `.env`:
+   ```
+   BASE_URL=https://api.pateway.ai
+   MODEL=deepseek-v4-flash
+   ```
 
 ## Chạy
 
@@ -93,6 +99,46 @@ nssm remove AIDealBot    # xóa service
    - Arguments: `main.py`
    - Start in: `D:\Projects\ai-deal-bot`
 4. Properties → Settings → uncheck "Stop the task if it runs longer than..."
+
+## Deploy 24/7 trên Fly.io
+
+Bot cần chạy liên tục (để nhận lệnh Telegram + poll mỗi 60 phút) và cần ổ đĩa bền
+cho SQLite (dedupe), nên dùng Fly.io với 1 volume. Các file `Dockerfile`, `.dockerignore`,
+`fly.toml` đã có sẵn trong repo.
+
+**1. Cài & đăng nhập flyctl** (một lần):
+```powershell
+iwr https://fly.io/install.ps1 -useb | iex
+fly auth login
+```
+
+**2. Tạo app + volume** (chạy trong thư mục repo):
+```bash
+fly launch --no-deploy --copy-config --name bot-news-telegram --region sin
+fly volumes create bot_data --size 1 --region sin
+```
+> Nếu hỏi tạo Postgres/Redis → chọn **No**. Nếu tên app đã bị lấy, đổi `app = "..."` trong `fly.toml`.
+
+**3. Nạp secrets** (thay bằng giá trị thật):
+```bash
+fly secrets set \
+  TELEGRAM_BOT_TOKEN="123:ABC..." \
+  TELEGRAM_CHAT_ID="123456789" \
+  API_KEY="sk-..." \
+  BASE_URL="https://api.pateway.ai" \
+  MODEL="deepseek-v4-flash"
+```
+
+**4. Deploy & xem log:**
+```bash
+fly deploy
+fly logs
+```
+
+**Ghi chú:**
+- Trên Fly không có `.env` — biến môi trường lấy từ `fly secrets` (đã loại `.env` khỏi image qua `.dockerignore`).
+- `DB_PATH=/data/db.sqlite` (khai báo trong `fly.toml`) trỏ SQLite vào volume → không mất dedupe khi restart.
+- Máy mặc định `shared-cpu-1x` / 256MB (~$2.5/tháng). Nếu gặp OOM: `fly scale memory 512`.
 
 ## Tùy chỉnh
 
