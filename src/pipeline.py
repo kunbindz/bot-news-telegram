@@ -18,6 +18,40 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+PREFILTER_KEYWORD_WEIGHTS = (
+    ("claude code", 6.0),
+    ("anthropic", 4.0),
+    ("claude", 4.0),
+    ("mcp", 3.0),
+    ("gpt", 3.0),
+    ("gemini", 2.5),
+    ("deepseek", 2.5),
+    ("llama", 2.5),
+    ("mistral", 2.5),
+    ("qwen", 2.5),
+    ("release", 1.5),
+    ("launch", 1.5),
+    ("announcing", 1.5),
+    ("introducing", 1.5),
+    ("free", 1.5),
+    ("open-source", 1.5),
+    ("open source", 1.5),
+    ("opensource", 1.5),
+    ("react", 2.0),
+    ("next.js", 2.0),
+    ("nextjs", 2.0),
+    ("vue", 2.0),
+    ("svelte", 2.0),
+    ("angular", 2.0),
+    ("typescript", 2.0),
+    ("vite", 2.0),
+    ("bun", 2.0),
+    ("deno", 2.0),
+    ("nestjs", 2.0),
+    ("prisma", 2.0),
+)
+
+
 class Pipeline:
     def __init__(self, config: dict, state: Optional["BotState"] = None):
         self.config = config
@@ -30,6 +64,7 @@ class Pipeline:
         self.ai_enabled = config["ai_filter"]["enabled"]
         sched = config["schedule"]
         self.max_send_per_cycle = sched.get("max_send_per_cycle", 5)
+        self.max_classify_per_cycle = sched.get("max_classify_per_cycle", 25)
         self.quiet_start = sched.get("quiet_hours_start", 23)
         self.quiet_end = sched.get("quiet_hours_end", 7)
         self.quiet_min_score = sched.get("quiet_min_score", 9)
@@ -64,6 +99,22 @@ class Pipeline:
             if keyword in source_hint or keyword in title_hint:
                 return keyword
         return (item.category or "other").lower()
+
+    def _prefilter_rank_key(self, item: Item) -> float:
+        text = f"{item.title or ''} {item.content or ''}".lower()
+        keyword_score = sum(
+            weight for keyword, weight in PREFILTER_KEYWORD_WEIGHTS
+            if keyword in text
+        )
+
+        recency_score = 0.0
+        if item.published_at is not None:
+            try:
+                recency_score = max(0.0, item.published_at.timestamp()) / 1_000_000_000
+            except (AttributeError, OSError, OverflowError, ValueError):
+                recency_score = 0.0
+
+        return keyword_score + recency_score
 
     def _select_diverse_items(self, items: List[Item]) -> List[Item]:
         if len(items) <= self.max_send_per_cycle:
@@ -135,6 +186,19 @@ class Pipeline:
         stats["new"] = len(items)
         if not items:
             return stats
+
+        # Cap truoc khi goi AI de tranh classify qua nhieu item moi trong mot cycle.
+        if len(items) > self.max_classify_per_cycle:
+            before = len(items)
+            items = sorted(
+                items,
+                key=self._prefilter_rank_key,
+                reverse=True,
+            )[:self.max_classify_per_cycle]
+            logger.info(
+                f"Classify cap: {len(items)}/{before} items "
+                f"(max={self.max_classify_per_cycle})"
+            )
 
         # Step 3: AI classify
         effective_min_score = (

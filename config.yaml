@@ -7,6 +7,7 @@ schedule:
   feeds_interval_minutes: 30
   batch_send_delay_seconds: 2  # delay giữa các message Telegram để tránh rate limit
   max_send_per_cycle: 5        # tối đa N tin mỗi cycle, tránh spam
+  max_classify_per_cycle: 25   # tối đa tin mới gọi AI mỗi cycle
   max_per_source_per_cycle: 2  # tránh 1 nguồn chiếm hết batch
   max_per_topic_per_cycle: 1   # tránh nhiều tin cùng một chủ đề/model
   quiet_hours_start: 23        # không gửi từ 23h...

@@ -36,6 +36,9 @@ def validate_config(config: Dict[str, Any]) -> None:
     _check_type(sched, "max_send_per_cycle", int, "schedule")
     _check_range(sched["max_send_per_cycle"], 1, 100, "schedule.max_send_per_cycle")
 
+    _check_type(sched, "max_classify_per_cycle", int, "schedule")
+    _check_range(sched["max_classify_per_cycle"], 1, 500, "schedule.max_classify_per_cycle")
+
     _check_type(sched, "max_per_source_per_cycle", int, "schedule")
     _check_range(sched["max_per_source_per_cycle"], 1, 100, "schedule.max_per_source_per_cycle")
 

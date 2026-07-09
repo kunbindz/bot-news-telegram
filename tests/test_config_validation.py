@@ -10,6 +10,7 @@ class TestConfigValidation(unittest.TestCase):
                 "feeds_interval_minutes": 20,
                 "batch_send_delay_seconds": 2,
                 "max_send_per_cycle": 5,
+                "max_classify_per_cycle": 25,
                 "max_per_source_per_cycle": 2,
                 "max_per_topic_per_cycle": 1,
                 "quiet_hours_start": 23,
