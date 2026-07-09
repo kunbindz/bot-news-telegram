@@ -142,7 +142,13 @@ class Pipeline:
             else self.min_score
         )
         if self.ai_enabled:
+            self.classifier.client.reset_usage()
             items = await self.classifier.classify_batch(items)
+            u = self.classifier.client.usage
+            stats["ai_tokens"] = (
+                f"calls={u['calls']} in={u['input']} out={u['output']} "
+                f"cache_read={u['cache_read']} cache_write={u['cache_write']}"
+            )
             to_send = [it for it in items
                        if it.should_notify and (it.score or 0) >= effective_min_score]
         else:

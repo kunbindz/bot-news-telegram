@@ -104,6 +104,9 @@ class AIChatClient:
         self.base_url = base_url
         self.timeout = timeout
         self.protocol = provider_protocol(model)
+        # Token counters (cumulative) for cost tracking; reset via reset_usage().
+        self.usage = {"calls": 0, "input": 0, "output": 0,
+                      "cache_read": 0, "cache_write": 0}
         api_key = api_key_from_env()
         # base_url None/empty -> dùng endpoint mặc định của SDK tương ứng
         if self.protocol == "anthropic":
@@ -117,10 +120,33 @@ class AIChatClient:
                 base_url=base_url or None, api_key=api_key,
                 timeout=timeout, max_retries=max_retries)
 
+    def reset_usage(self) -> None:
+        for key in self.usage:
+            self.usage[key] = 0
+
+    def _record(self, usage, *, cached: bool) -> None:
+        """Accumulate token counts from a provider usage object."""
+        if usage is None:
+            return
+        self.usage["calls"] += 1
+        if cached:  # Anthropic Messages usage fields
+            self.usage["input"] += getattr(usage, "input_tokens", 0) or 0
+            self.usage["output"] += getattr(usage, "output_tokens", 0) or 0
+            self.usage["cache_read"] += getattr(usage, "cache_read_input_tokens", 0) or 0
+            self.usage["cache_write"] += getattr(usage, "cache_creation_input_tokens", 0) or 0
+        else:  # OpenAI chat.completions usage fields
+            self.usage["input"] += getattr(usage, "prompt_tokens", 0) or 0
+            self.usage["output"] += getattr(usage, "completion_tokens", 0) or 0
+
     async def complete(self, *, system: str, user: str,
                        temperature: Optional[float] = None,
-                       max_tokens: int = 1024, want_json: bool = True) -> str:
-        """Send one system+user turn and return the assistant's text reply."""
+                       max_tokens: int = 1024, want_json: bool = True,
+                       disable_thinking: bool = False) -> str:
+        """Send one system+user turn and return the assistant's text reply.
+
+        disable_thinking turns off the model's reasoning tokens (Anthropic only);
+        big cost saver for structured tasks like classification.
+        """
         if self.protocol == "anthropic":
             kwargs = {
                 "model": self.model,
@@ -130,7 +156,10 @@ class AIChatClient:
             }
             if temperature is not None:
                 kwargs["temperature"] = temperature
+            if disable_thinking:
+                kwargs["thinking"] = {"type": "disabled"}
             message = await self.client.messages.create(**kwargs)
+            self._record(getattr(message, "usage", None), cached=True)
             return _anthropic_text(message)
 
         request = {
@@ -147,4 +176,5 @@ class AIChatClient:
             if response_format:
                 request["response_format"] = response_format
         resp = await self.client.chat.completions.create(**request)
+        self._record(getattr(resp, "usage", None), cached=False)
         return resp.choices[0].message.content

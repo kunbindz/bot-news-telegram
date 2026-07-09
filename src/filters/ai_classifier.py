@@ -105,9 +105,11 @@ class AIClassifier:
                     f"Tiêu đề: {item.title}\n"
                     f"Nội dung: {item.content[:3000]}"
                 )
+                # disable_thinking: phân loại là tác vụ JSON có cấu trúc, không cần
+                # reasoning tokens -> cắt ~50% output token (đắt nhất) mà vẫn đủ chất lượng.
                 raw = await self.client.complete(
                     system=SYSTEM_PROMPT, user=user_msg,
-                    temperature=0.3, max_tokens=2048,
+                    temperature=0.3, max_tokens=768, disable_thinking=True,
                 )
                 data = loads_json_lenient(raw)
 
