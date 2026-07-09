@@ -1,0 +1,23 @@
+# Fly.io config cho AI Deal Bot (tiến trình chạy 24/7)
+# Deploy: xem hướng dẫn ở cuối / README.
+app = "bot-news-telegram"
+primary_region = "sin"          # Singapore — gần VN nhất
+
+[build]
+
+[env]
+  DB_PATH = "/data/db.sqlite"   # SQLite nằm trên volume để không mất dữ liệu khi restart
+  PORT = "8080"
+
+# Volume lưu bền cho SQLite (dedupe/history). Tạo bằng:
+#   fly volumes create bot_data --size 1 --region sin
+[[mounts]]
+  source = "bot_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+# Không khai báo [http_service] vì đây là bot nền, không phục vụ HTTP public.
+# Máy sẽ chạy liên tục 24/7 chừng nào tiến trình còn sống; nếu crash Fly tự restart.
